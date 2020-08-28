@@ -15,6 +15,13 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+    except ConnectionResetError as cre:
+        pass
+    except AttributeError as cre:
+        pass
+    except TypeError as cre:
+        pass
+        
     execute_from_command_line(sys.argv)
 
 

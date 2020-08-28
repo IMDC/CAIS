@@ -10,8 +10,7 @@ from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from numpy import loadtxt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler
 
 import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -19,28 +18,23 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 import keras
 from keras.layers import Dense
 from keras.models import Sequential
-from keras.utils import to_categorical
 
 import modAL_multicol
 from modAL_multicol.models import ActiveLearner, Committee
 from modAL_multicol.multilabel import avg_score
 from modAL_multicol.uncertainty import uncertainty_sampling
-from home.multi_encoder import MultiColumnLabelEncoder
 
 from .models import Blobby, Response, Question, AnswerRadio
-
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
-# import modAL
-# from modAL.models import ActiveLearner, Committee
-# from modAL.uncertainty import uncertainty_sampling
+
+DATASIZE = 20000 # 100000
 
 class ActiveLearningClient:
 
     def keras_model(self):
         """
-        This function compiles and returns a Keras model.
-        Should be passed to KerasClassifier in the Keras scikit-learn API.
+            This function compiles and returns a Keras model.
+            Should be passed to KerasClassifier in the Keras scikit-learn API.
         """
         print("KERAS MODEL GENERATION")
         model = Sequential()
@@ -54,7 +48,7 @@ class ActiveLearningClient:
     def load_AL_models(self, cpy_xpool, cpy_ypool):
         n_members = 2 # initializing number of Committee members
         learner_list = list()
-        n_initial = 700  # number of initial training data ~ this determines the ratio between user_model vs. human input to inquiry
+        n_initial = 300  # number of initial training data ~ this determines the ratio between user_model vs. human input to inquiry
 
         if not Blobby.objects.exists(): # participant number == 1
             # below for loop would only be launched for the very first participant...
@@ -69,14 +63,14 @@ class ActiveLearningClient:
                     query_strategy = avg_score
                 )
                 learner_list.append(learner)
-        else: # participant number > 1
+        else: # participant number > 1, we load models
             dir_flag = settings.BASE_DIR
             orig_urls = [dir_flag+"/originalfirst.h5", dir_flag+"/originalsecond.h5"]
             mod_urls = [dir_flag+"/modifiedfirst.h5", dir_flag+"/modifiedsecond.h5"]
 
             for member_idx in range(n_members):
                 model_url = orig_urls[member_idx] if Path(orig_urls[member_idx]).is_file() else mod_urls[member_idx]
-                print("\tMODEL_MOD at {}\n".format(model_url))
+                print("\tLoaded Models from: {}\n".format(model_url))
 
                 train_idx = np.random.choice(range(cpy_xpool.shape[0]), size=n_initial, replace=False)            
                 X_train, y_train = cpy_xpool[train_idx], cpy_ypool[train_idx]
@@ -86,6 +80,8 @@ class ActiveLearningClient:
                 except Exception as e:
                     print("Error in alc.py while loading Keras models", e)
                     return
+                    
+                # when model was loaded, we don't train extra x and y
                 learner = ActiveLearner(
                     estimator = model,
                     query_strategy = avg_score
@@ -99,12 +95,55 @@ class ActiveLearningClient:
         self.learner = self.load_AL_models(cpy_xpool, cpy_ypool)
         
     def set_data(self, dataset):
-        self.sc_x = StandardScaler()
+        self.sc_x = RobustScaler()
         self.X_pool = self.sc_x.fit_transform(dataset[:, :5])
         Y = pd.DataFrame(dataset[:, 5:])
-        encoded_Y = to_categorical(MultiColumnLabelEncoder().fit_transform(Y)) # one hot encoding
+        encoded_Y = self.to_ordinal(Y)
         self.Y_pool = encoded_Y.reshape([np.size(Y,0), 20])
 
+    def to_ordinal(self, y, num_classes=None, dtype='float32'):
+        """Converts a class vector of ordinal values to multi-hot binary class matrix.
+        E.g. for use with binary_crossentropy.
+        # Arguments
+            y: class vector to be converted into a matrix
+                (integers from 0 to num_classes).
+            num_classes: total number of classes.
+            dtype: The data type expected by the input, as a string
+                (`float32`, `float64`, `int32`...)
+        # Returns
+            A binary matrix representation of the input. The classes axis
+            is placed last.
+        # Example
+        ```python
+        # Consider an array of 5 labels out of a set of 3 classes {0, 1, 2}:
+        > labels
+        array([0, 2, 1, 2, 0])
+        # `to_ordinal` converts this into a matrix with as many
+        # columns are there are classes, minus one, because the
+        # first class is represented by a zero vector.
+        > to_ordinal(labels)
+        array([[ 0.,  0.],
+            [ 1.,  1.],
+            [ 1.,  0.],
+            [ 1.,  1.],
+            [ 0.,  0.]], dtype=float32)
+        ```
+        """
+        y = np.array(y, dtype='int')
+        input_shape = y.shape
+        if input_shape and input_shape[-1] == 1 and len(input_shape) > 1:
+            input_shape = tuple(input_shape[:-1])
+        y = y.ravel()
+        if not num_classes:
+            num_classes = np.max(y) + 1
+        n = y.shape[0]
+        ordinal = np.zeros((n, num_classes - 1), dtype=dtype)
+        for i, yi in enumerate(y):
+            ordinal[i, :yi] = 1
+        output_shape = input_shape + (num_classes - 1,)
+        ordinal = np.reshape(ordinal, output_shape)
+        return ordinal
+        
     def data_prep(self):
         """ Loads data from given SDT csv file. Returns:
             model: The passive model learned from the Signal Detection Theory user model data.
@@ -112,7 +151,7 @@ class ActiveLearningClient:
             X_pool: Input dataset, fit transformed using sc_x
             Y: Output dataset
         """
-        csv_url = settings.STATICFILES_DIRS[0] + "/um_data_deaf.csv" # default, But MUST BE CHANGED for the actual learning.
+        csv_url = settings.STATICFILES_DIRS[0] + "/deaf_{}.csv".format(DATASIZE) # default, But MUST BE CHANGED for the actual learning.
         try:
             df = pd.read_csv(csv_url, header=None, sep=',')
             dataset = np.array(df)
@@ -127,11 +166,11 @@ class ActiveLearningClient:
         deaf_or_deafend, hoh = ('I am Deafened', 'I identify as Deaf'), 'I am Hard of Hearing'        
         dir_flag = settings.STATICFILES_DIRS[0]
         if deaf_or_hoh in deaf_or_deafend:
-            csv_url = dir_flag + "/um_data_deaf.csv"
+            csv_url = dir_flag + "/deaf_{}.csv".format(DATASIZE)
         elif hoh == deaf_or_hoh:
-            csv_url = dir_flag + "/um_data_hoh.csv"
+            csv_url = dir_flag + "/hoh_{}.csv".format(DATASIZE)
         else: # either option 1 or 5, we load all files
-            csv_url = dir_flag + "/c_um_data100000.csv"
+            csv_url = dir_flag + "/um_{}.csv".format(DATASIZE)
         print("HEARING GROUP:{}, loading:{}".format(deaf_or_hoh, csv_url))
         try:
             df = pd.read_csv(csv_url, header=None, sep=',')
@@ -159,12 +198,14 @@ class ActiveLearningClient:
             tmp_i = c*5 + ratings[c] - 1
             np_ratings[0, tmp_i] = 1
 
-        print("User ratings:", np_ratings)
+        print("Teaching Ratings:", np_ratings)
         # User ratings: [[1. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 1. 0. 0. 0. 0. 0. 1. 0. 0.]] 
         # we convert form to (1,20) not (,20)
         # therefore, the 0-4 range for index doesn't really matter because we convert from 1-5 range to 1,20 anyways.
-        self.learner.teach(q_instance, np_ratings, epochs=100, verbose=0)
+        epochCounter = 100
+        self.learner.teach(q_instance, np_ratings, epochs=epochCounter, verbose=0)
         self.X_pool = np.delete(self.X_pool, query_idx, axis=0)
+        print("Done Teaching with epoch: {}".format(epochCounter))
         return (self.learner, self.X_pool)
 
 

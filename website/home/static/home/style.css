@@ -81,6 +81,7 @@ hr {
   padding: 0.1rem 0.25rem 0.1rem 1.25rem !important;
   background-color: #FFFAFA;
   color: black;
+  font-size: 1.2rem;
   border-bottom: none;
   border-top: 1px solid black;
   border-left: 1px solid black;
@@ -94,22 +95,22 @@ hr {
 .cappyHeadrow{
   justify-content: center;
   align-items: center;
-  text-align: center;  
+  /* text-align: center;   */
   height: 100%;
 }
 .cappySubhead{
   display: flex;
-  justify-content: center;
+  /* justify-content: center;
   align-items: center;
-  text-align: center;  
-  font-size: 1.2rem;
+  text-align: center;   */
+  font-size: 1.1rem;
 }
 .cappyText{
   justify-content: center;
   align-items: center;
-  text-align: center;
+  /* text-align: center; */
   line-height: 1.6;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 .satisfaction-scale{
   /* color: #fff; */
@@ -135,6 +136,62 @@ hr {
   padding: 0.25rem 0.25rem !important;
 }
 
+.likert {
+  list-style:none;
+  width:100%;
+  margin:0;
+  padding:0;
+  display:block;
+}
+.likert:before {
+  content: '';
+  position:relative;
+  top:9px;
+  left:2%;
+  display:block;
+  background-color:#efefef;
+  height:4px;
+  width:87%;
+}
+.likert-input {
+  list-style:none;
+  width:100%;
+  margin:0;
+  padding:0;
+  display:block;
+}
+.likert-input:before {
+  content: '';
+  position:relative;
+  top:28px;
+  left:2%;
+  display:block;
+  background-color:#efefef;
+  height:4px;
+  width:100%;
+  z-index: -1;
+}
+.likert li {
+  display:inline-block;
+  width: 18%;
+  text-align:center;
+  vertical-align: top;
+}
+.likert li input[type=radio] {
+  display:block;
+  position:relative;
+  top:0;
+  left:45%;
+}
+.likert li span {
+  display:block;
+  position:relative;
+  top:0;
+}
+.likert li label {
+  width:100%;
+}
+
 
 /* below is for starset */
 .starset{
@@ -143,6 +200,7 @@ hr {
 }
 .starset span{
   display:inline-block;
+  margin-left: 10%;
 }
 #inputstar1, #inputstar2, #inputstar3, #inputstar4{
     font-size: 1.6rem
@@ -152,7 +210,8 @@ hr {
     font-size:1.9rem;
 }
 .checked {
-  color: rgb(226, 207, 37);
+  /* color: rgb(226, 207, 37); */
+  color: rgb(2, 117, 216);
 }
 /* end of star styling */
 
@@ -200,13 +259,93 @@ a {
 @media only screen and (max-width: 1024px) {
 
   div#inputstar1 div, div#inputstar2 div, div#inputstar3 div, div#inputstar4 div{
-    font-size:1.5rem;
+    font-size:1.2rem;
   }
   .starset1, .starset2, .starset3, .starset4 {
     font-size:1.5rem;
   }
-  .btn, .scale-text, .satisfaction-scale{
-    font-size:0.9rem;
+  .scale-text, .satisfaction-scale{
+    font-size:0.8rem;
+  }
+  .btn{
+    font-size:0.6rem;
+  }
+
+    
+  .likert {
+    list-style:none;
+    width:100%;
+    margin:0;
+    padding:0;
+    display:block;
+  }
+  .likert:before {
+    content: '';
+    position:relative;
+    top:9px;
+    left:2%;
+    display:block;
+    background-color:#efefef;
+    height:4px;
+    width:100%;
+  }
+  .likert li {
+    display:inline-block;
+    width: 26%;
+    text-align:center;
+    vertical-align: top;
+  }
+  .likert li span {
+    display:block;
+    position:relative;
+    top:0;
+  }
+  .likert li label {
+    width:100%;
+    font-size: 0.7rem;
+    margin-bottom: 0;
   }
   
+  .likert-input {
+    list-style:none;
+    width:100%;
+    margin:0;
+    padding:0;
+    display:block;
+  }
+  .likert-input:before {
+    content: '';
+    position:relative;
+    top:18px;
+    left:2%;
+    display:block;
+    background-color:#efefef;
+    height:4px;
+    width:100%;
+    z-index: -1;
+  }
+
+  .starset{
+    font-size: 2rem;
+    text-align: center;
+  }
+  .starset span{
+    display:inline-block;
+    margin-left: 8%;
+  }
+  .cappyText{
+    justify-content: center;
+    align-items: center;
+    /* text-align: center; */
+    line-height: 1.6;
+    font-size: 0.8rem;
+  }
+  .cappySubhead{
+    display: flex;
+    /* justify-content: center;
+    align-items: center;
+    text-align: center;   */
+    font-size: 0.8rem;
+  }
+
 }

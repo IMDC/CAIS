@@ -59,22 +59,27 @@ def consent(request):
 
 
 def index(request):
+    max_vid_count = 19 # 20 videos
     
-    
-    if request.session["SUBMIT_COUNT"] == 0:
-        # initiate the models..?
-        apps.get_app_config("home").set_x_pool()
+    print("request.session: value {}".format(request.session["SUBMIT_COUNT"]))
 
-    if len(request.session["VIDEO_POOL"]) > 0 and request.session["SUBMIT_COUNT"] < 20:
+    if request.session["SUBMIT_COUNT"] == max_vid_count: # request.session["SUBMIT_COUNT"] starts from 0, 
+        # if request.method == "POST" or None:
+        return HttpResponseRedirect("byebye/")        
+    else:
+        if request.session["SUBMIT_COUNT"] == 0:
+            # initiate the models..?
+            apps.get_app_config("home").set_x_pool()
+
         # 1. get prediction from cappy backend
         query_idx, preds, queried_vals = apps.get_app_config("home").make_prediction()    
         if query_idx is None: # when there's no query_idx provided, we close the case
             render(request, "byebye.html")
-    
+
         # 2. parse the prediction passed from cappy.
         if isinstance(preds, np.ndarray):
             preds = preds.flatten().astype(int).tolist()
-        elif isinstance(preds, list):     
+        elif isinstance(preds, list):
             preds = list(map(lambda x: int(x), preds))
         else:
             print("UNHANDLED EXCEPTION")
@@ -86,14 +91,14 @@ def index(request):
         request.session["VIDEO_POOL"].remove(rand_video_sess)
         request.session["LIST_VIDEOS"].append(rand_video_sess)        
         genre = rand_video_sess['fields']['video_name']
-        print("VIDEO_POOL-length:{}, collection: {}".format(len(request.session["VIDEO_POOL"]), request.session["LIST_VIDEOS"]))
+        print("VIDEO_POOL-length:{}, collection: {}".format(len(request.session["VIDEO_POOL"]), [vd['fields']['video_name'] for vd in request.session["LIST_VIDEOS"]]))
 
         #  pick the two numbers for the trivia questions..
         rand_numbs = random.sample(request.session["LIST_NUMBERS"], 2)
         request.session["TRIVIA_QA"] = (rand_numbs)
         request.session["LIST_NUMBERS"].remove(rand_numbs[0])
         request.session["LIST_NUMBERS"].remove(rand_numbs[1])
-        print("Length of the trivia questions is now: {}".format(len(request.session["LIST_NUMBERS"])))
+        # print("Length of the trivia questions is now: {}".format(len(request.session["LIST_NUMBERS"])))
 
         # 4. get url to pass the CaptionFile obj
         x = genre.split("/")[1].split(".")[0] + "_0.vtt"
@@ -115,13 +120,6 @@ def index(request):
             "caption_title": cappy_to_template,
         }
 
-        print("request.session: value {}".format(request.session["SUBMIT_COUNT"]))
-
-    if request.session["SUBMIT_COUNT"] == 20: # request.session["SUBMIT_COUNT"] starts from 0, 
-        if request.method == "POST" or None:
-            return HttpResponseRedirect("byebye/")
-        return render(request, "byebye.html")
-    else:
         return render(request, "index.html", context)
 
 
@@ -178,8 +176,6 @@ def client_to_view(request):
         else:
             return HttpResponse("unsuccessful")
 
-
-
 def question_view(request):
     form = ResponseForm(request.POST or None)
     context = {"form": form}
@@ -197,5 +193,6 @@ def noconsent(request):
 
 
 def byebye(request):
+    print("STUDY FINISHED WITH THIS PARTICIPANT.")
     email = "somang@mie.utoronto.ca"
     return render(request, "byebye.html", {"email": email})

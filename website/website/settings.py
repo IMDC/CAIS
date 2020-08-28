@@ -29,7 +29,7 @@ SECRET_KEY = 'a1#is6o$x!4nn58o6&q_ocuxz%@i#h@#3n2ifmvlc6c=og7)7i'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'cappy.imdc.ca']
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'cappy.imdc.ca', 'http://127.0.0.1:8000', 'http://cappy.imdc.ca', 'localhost']
 
 
 # Application definition

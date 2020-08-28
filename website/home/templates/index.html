@@ -55,29 +55,20 @@
 
       <div class="container">
         <ul class="list-group">
-          <li class="list-group-item row satisfaction-scale">Satisfaction star-scale</li>
-          <li class="list-group-item row scale-text">
-            <div class="col-lg-4"><span class="fa fa-star checked"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
-            <div class="col">Strongly dissatisfied</div>
-          </li>
-          <li class="list-group-item row scale-text">
-            <div class="col-lg-4"><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
-            <div class="col">Dissatisfied</div>
-          </li>
-          <li class="list-group-item row scale-text">
-            <div class="col-lg-4"><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
-            <div class="col">Neither satisfied nor dissatisfied</div>
-          </li>
-          <li class="list-group-item row scale-text">
-            <div class="col-lg-4"><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star"></span></div>
-            <div class="col">Satisfied</div>
-          </li>
-          <li class="list-group-item row scale-text">
-            <div class="col-lg-4"><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span></div>
-            <div class="col">Strongly satisfied</div>
+          <li class="list-group-item satisfaction-scale">Satisfaction levels</li>
+          <li class="list-group-item">
+            <ul class="likert">
+              <li><span class="fa fa-circle-o"></span><label>Strongly dissatisfied</label></li>
+              <li><span class="fa fa-circle-o"></span><label>Dissatisfied</label></li>
+              <li><span class="fa fa-circle-o"></span><label>Neither satisfied nor dissatisfied</label></li>
+              <li><span class="fa fa-circle-o"></span><label>Satisfied</label></li>
+              <li><span class="fa fa-circle-o"></span><label>Strongly satisfied</label></li>
+            </ul>
           </li>
         </ul>
       </div>
+
+
       <!-- the hidden DOM to be used for storing pred values -->
       <i style="visibility: hidden;" id="s_pred"></i>
       <i style="visibility: hidden;" id="d_pred"></i>
@@ -90,8 +81,8 @@
       <form action="" id="ratingsForm" method="post" class="form-group" onsubmit = "return validateForm()">{% csrf_token %}
         <div class="container">
           <div class="row"> 
-            <div class="col-xl-6 col-m-12 cappyHead">
-              Cappy predicted the following ratings you would perceive for caption synchronization delay, presentation speed, missing words and paraphrasing.
+            <div class="col-xl-6 col-lg-6 col-m-12 cappyHead">
+              <b>Cappy predicted that you would be </b>
             </div>
           </div>
 
@@ -99,23 +90,22 @@
           <div class="row rating_row">
             <div class="col-xl-6 col-lg-6 col-md-12">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-4 col-md-12 cappySubhead">Delay</div>
-                <div class="col-xl-7 col-lg-8 col-md-12 cappyText">
-                  <div class="starset starset1"><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
+                <div class="col-xl-5 col-lg-5 col-md-12 cappySubhead">Synchronization Delay</div>
+                <div class="col cappyText">
                   <span id="d_rate"></span>
                 </div>
               </div>
             </div>
-            <div class="col-xl-6 col-lg-6 col-md-12">
+            <div class="col">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-5 col-md-6 agreebtn" id="activeButtonDelay">
+                <div class="col-lg-4 col-md-6 agreebtn" id="activeButtonDelay">
                   <button class="btn btn-outline-primary btn-block" onclick="hideStarInput('delayquality', `starset1`); resetStars(`starset1`);" name="Go" type="button">I Agree</button>
                   <button class="btn btn-outline-primary btn-block" onclick="showStarInput('delayquality', `starset1`)" type="button">I Disagree</button>
                 </div>
-                <div class="col-xl-7 col-lg-7 col-md-6">                
+                <div class="col">
                   <div id="delayquality" class="cappyText" style="visibility: hidden;">
-                    <div id="inputstar1"></div>
-                    <div id="starexplain1" class="starexplain">Click a star to teach Cappy</div>
+                    <div id="inputstar1" class="likert-input"></div>
+                    <div id="starexplain1" class="starexplain">Click an item to teach Cappy</div>
                   </div>
                 </div>
               </div>
@@ -125,22 +115,21 @@
           <div class="row rating_row">
             <div class="col-xl-6 col-lg-6 col-md-12">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-4 col-md-12 cappySubhead">Speed</div>
-                <div class="col-xl-7 col-lg-8 col-md-12 cappyText">          
-                  <div class="starset starset2"><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
+                <div class="col-xl-5 col-lg-5 col-md-12 cappySubhead">Presentation Speed</div>
+                <div class="col cappyText">
                   <span id="s_rate"></span>
                 </div>
               </div>
             </div>
-            <div class="col-xl-6 col-lg-6 col-md-12">
+            <div class="col">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-5 col-md-6 agreebtn" id="activeButtonSpeed">
+                <div class="col-lg-4 col-md-6 agreebtn" id="activeButtonSpeed">
                   <button class="btn btn-outline-primary btn-block" onclick="hideStarInput('speedquality', `starset2`); resetStars(`starset2`);" name="Go" type="button">I Agree</button>
                   <button class="btn btn-outline-primary btn-block" onclick="showStarInput('speedquality', `starset2`)" type="button">I Disagree</button>
                 </div>
-                <div class="col-xl-7 col-lg-7 col-md-6">            
+                <div class="col">            
                   <div id="speedquality" class="cappyText" style="visibility:hidden">
-                    <div id="inputstar2"></div>
+                    <div id="inputstar2" class="likert-input"></div>
                     <div id="starexplain2" class="starexplain">Click a star to teach Cappy</div>
                   </div>
                 </div>
@@ -151,22 +140,21 @@
           <div class="row rating_row">
             <div class="col-xl-6 col-lg-6 col-md-12">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-4 col-md-12 cappySubhead">Missing words</div>
-                <div class="col-xl-7 col-lg-8 col-md-12 cappyText">            
-                  <div class="starset starset3"><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
+                <div class="col-xl-5 col-lg-5 col-md-12 cappySubhead">Missing words</div>
+                <div class="col cappyText">
                   <span id="m_rate"></span>
                 </div>
               </div>
             </div>
-            <div class="col-xl-6 col-lg-6 col-md-12">
+            <div class="col">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-5 col-md-6 agreebtn" id="activeButtonMW">
+                <div class="col-lg-4 col-md-6 agreebtn" id="activeButtonMW">
                   <button class="btn btn-outline-primary btn-block" onclick="hideStarInput('missingwords', `starset3`); resetStars(`starset3`);" name="Go" type="button">I Agree</button>
                   <button class="btn btn-outline-primary btn-block" onclick="showStarInput('missingwords', `starset3`)" type="button">I Disagree</button>
                 </div>
-                <div class="col-xl-7 col-lg-7 col-md-6">
+                <div class="col">
                   <div id="missingwords" class="cappyText" style="visibility:hidden">              
-                    <div id="inputstar3"></div>
+                    <div id="inputstar3" class="likert-input"></div>
                     <div id="starexplain3" class="starexplain">Click a star to teach Cappy</div>
                   </div>
                 </div>
@@ -177,22 +165,21 @@
           <div class="row rating_row">
             <div class="col-xl-6 col-lg-6 col-md-12">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-4 col-md-12 cappySubhead">Paraphrasing</div>
-                <div class="col-xl-7 col-lg-8 col-md-12 cappyText">       
-                  <div class="starset starset4"><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span></div>
+                <div class="col-xl-5 col-lg-5 col-md-12 cappySubhead">Paraphrasing</div>
+                <div class="col cappyText">
                   <span id="p_rate"></span>
                 </div>
               </div>
             </div>
-            <div class="col-xl-6 col-lg-6 col-md-12">
+            <div class="col">
               <div class="row cappyHeadrow">
-                <div class="col-xl-5 col-lg-5 col-md-6 agreebtn" id="activeButtonP">
+                <div class="col-lg-4 col-md-6 agreebtn" id="activeButtonP">
                   <button class="btn btn-outline-primary btn-block" onclick="hideStarInput('paraphrasing', `starset4`); resetStars(`starset4`);" name="Go" type="button">I Agree</button>
                   <button class="btn btn-outline-primary btn-block" onclick="showStarInput('paraphrasing', `starset4`)" type="button">I Disagree</button>
                 </div>
-                <div class="col-xl-7 col-lg-7 col-md-6">
+                <div class="col">
                   <div id="paraphrasing" class="cappyText" style="visibility:hidden">              
-                    <div id="inputstar4"></div>
+                    <div id="inputstar4" class="likert-input"></div>
                     <div id="starexplain4" class="starexplain">Click a star to teach Cappy</div>
                   </div>
                 </div>
@@ -204,8 +191,8 @@
             <div style="text-align: center; padding-top: 0.6rem;">
               <h3>{{submitReady}} of {{vid_count}} ratings completed</h3>
             </div>
-            <!-- <div id="bottompane" class="col" style="visibility:hidden; padding-top: 0.6rem;"> -->
-            <div id="bottompane" class="col" style="padding-top: 0.6rem;">              
+            <div id="bottompane" class="col" style="visibility:hidden; padding-top: 0.6rem;">
+            <!-- <div id="bottompane" class="col" style="padding-top: 0.6rem;">               -->
               <button id="submitRating" type="submit" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="placeholder">
                 Next
               </button>
