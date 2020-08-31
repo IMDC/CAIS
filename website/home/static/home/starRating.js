@@ -205,8 +205,7 @@ function setCurrentStarRating(key, value) {
 }
 
 function updateUserRating(ratingsArr){    
-    var ratingsArr = JSON.stringify(ratingsArr);
-    console.log("updateuserrating", ratingsArr, URL);
+    var ratingsArr = JSON.stringify(ratingsArr);   
 
     $.ajax({
         type: 'POST',

@@ -240,7 +240,6 @@ class BaseCommittee(ABC, BaseEstimator):
     """
     def __init__(self, learner_list: List[BaseLearner], query_strategy: Callable) -> None:
         assert type(learner_list) == list, 'learners must be supplied in a list'
-
         self.learner_list = learner_list
         self.query_strategy = query_strategy
 
@@ -306,7 +305,6 @@ class BaseCommittee(ABC, BaseEstimator):
         """
         for learner in self.learner_list:
             learner.fit(X, y, **fit_kwargs)
-
         return self
 
     def query(self, *query_args, **query_kwargs) -> Union[Tuple, modALinput]:
@@ -324,7 +322,16 @@ class BaseCommittee(ABC, BaseEstimator):
             be labelled and the instances themselves. Can be different in other cases, for instance only the instance to
             be labelled upon query synthesis.
         """
-        query_result = self.query_strategy(self, *query_args, **query_kwargs)
+        X = query_args[0]
+        print("querying@base.py", X.shape)
+        if bool(self.queried_X): # if queried_X is not empty
+            # we check if we can take out what was asked already
+            X = np.delete(X, list(self.queried_X.keys()), axis=0)
+        print("querying@base.py", X.shape)
+        
+        query_result = self.query_strategy(self, X)
+        self.queried_X[query_result[0][0]] = query_result[1][0]
+    
         return query_result
 
     def rebag(self, **fit_kwargs) -> None:

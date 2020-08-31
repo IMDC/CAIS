@@ -49,14 +49,27 @@ class ActiveLearningClient:
         return model
 
     def load_AL_models(self):
-        cpy_xpool, cpy_ypool = deepcopy(self.X_pool), deepcopy(self.Y_pool)
         n_members = 2 # initializing number of Committee members
         learner_list = list()
-        n_initial = 300  # number of initial training data ~ this determines the ratio between user_model vs. human input to inquiry
 
         if not Blobby.objects.exists(): # participant number == 1
             # below for loop would only be launched for the very first participant...
             print("FIRST PARTICIPANT!")
+            self.csv_url = settings.STATICFILES_DIRS[0] + "/um_{}.csv".format(DATASIZE) # default, But MUST BE CHANGED for the actual learning.
+            try:
+                df = pd.read_csv(self.csv_url, header=None, sep=',')            
+                tmp_dataset = np.array(df)
+            except Exception as e:
+                print(e)
+                return
+            tmp_sc_x = RobustScaler()
+            cpy_xpool = tmp_sc_x.fit_transform(tmp_dataset[:, :5])
+            Y = pd.DataFrame(tmp_dataset[:, 5:])
+            encoded_Y = self.to_ordinal(Y)
+            cpy_ypool = encoded_Y.reshape([np.size(Y,0), 20])
+            
+            n_initial = 300  # number of initial training data ~ this determines the ratio between user_model vs. human input to inquiry
+
             for member_idx in range(n_members):
                 train_idx = np.random.choice(range(cpy_xpool.shape[0]), size=n_initial, replace=False)
                 X_train, y_train = cpy_xpool[train_idx], cpy_ypool[train_idx]
@@ -67,6 +80,7 @@ class ActiveLearningClient:
                     query_strategy = avg_score
                 )
                 learner_list.append(learner)
+
         else: # participant number > 1, we load models
             dir_flag = settings.BASE_DIR
             orig_urls, mod_urls = [dir_flag+"/originalfirst.h5", dir_flag+"/originalsecond.h5"], [dir_flag+"/modifiedfirst.h5", dir_flag+"/modifiedsecond.h5"]
@@ -74,42 +88,14 @@ class ActiveLearningClient:
             for member_idx in range(n_members):
                 model_url = orig_urls[member_idx] if Path(orig_urls[member_idx]).is_file() else mod_urls[member_idx]
                 print("\tLoaded Models from: {}\n".format(model_url))
-
-                train_idx = np.random.choice(range(cpy_xpool.shape[0]), size=n_initial, replace=False)
-                X_train, y_train = cpy_xpool[train_idx], cpy_ypool[train_idx]
-                cpy_xpool, cpy_ypool = np.delete(cpy_xpool, train_idx, axis=0), np.delete(cpy_ypool, train_idx, axis=0)
-                
                 model = keras.models.load_model(model_url)  # load the classifier
                 # when model was loaded, we don't train extra x and y
-                learner_list.append(
-                    ActiveLearner(
-                        estimator=model, query_strategy=avg_score
-                        # X_training = X_train, y_training = y_train
-                        )
-                    )
+                learner_list.append(ActiveLearner(estimator=model, query_strategy=avg_score))
         return Committee(learner_list=learner_list, given_classes=np.array([1,2,3,4,5]))
 
     def __init__(self):
-        self.data_prep()
         self.learner = self.load_AL_models()
-        
-    def data_prep(self):
-        self.csv_url = settings.STATICFILES_DIRS[0] + "/um_{}.csv".format(DATASIZE) # default, But MUST BE CHANGED for the actual learning.
-        try:
-            df = pd.read_csv(self.csv_url, header=None, sep=',')
-            self.dataset = np.array(df)
-            self.set_data(self.dataset)
-        except Exception as e:
-            print(e)
-            return
-            
-    def set_data(self, dataset):
-        self.sc_x = RobustScaler()
-        self.X_pool = self.sc_x.fit_transform(dataset[:, :5])
-        Y = pd.DataFrame(dataset[:, 5:])
-        encoded_Y = self.to_ordinal(Y)
-        self.Y_pool = encoded_Y.reshape([np.size(Y,0), 20])
-
+                    
     def get_data_for_hearing_group(self):
         dir_flag = settings.STATICFILES_DIRS[0]
         deafend, deaf, hoh = 'I am Deafened', 'I identify as Deaf', 'I am Hard of Hearing'
@@ -127,11 +113,17 @@ class ActiveLearningClient:
         print("HEARING GROUP:{}, loading:{}".format(deaf_or_hoh, self.csv_url))
         try:
             df = pd.read_csv(self.csv_url, header=None, sep=',')
-            self.dataset = np.array(df)
+            dataset = np.array(df) # this sets the class variable...
         except Exception as e:
             print(e)
             return
-        self.set_data(self.dataset)
+        
+        self.sc_x = RobustScaler()
+        self.X_pool = self.sc_x.fit_transform(dataset[:, :5])
+        Y = pd.DataFrame(dataset[:, 5:])
+        encoded_Y = self.to_ordinal(Y)
+        self.Y_pool = encoded_Y.reshape([np.size(Y,0), 20])
+
 
     def to_ordinal(self, y, num_classes=None, dtype='float32'):
         y = np.array(y, dtype='int')
@@ -150,8 +142,9 @@ class ActiveLearningClient:
         return ordinal
         
     def make_preds(self):
-        query_idx, query_inst = self.learner.query(self.X_pool)
-        queried_vals = self.sc_x.inverse_transform(query_inst)
+        query_idx, q_instance = self.learner.query(self.X_pool)
+
+        queried_vals = self.sc_x.inverse_transform(q_instance)
         # get machine prediction to be displayed
         machine_prediction = list(np.array(self.learner.predict(queried_vals)) + 1) # add 1 to show in 1-5 scale
         print("machine prediction:", machine_prediction) # these values are +1 from what's predicted.
@@ -173,20 +166,12 @@ class ActiveLearningClient:
         # we convert form to (1,20) not (,20)
         # therefore, the 0-4 range for index doesn't really matter because we convert from 1-5 range to 1,20 anyways.
         self.learner.teach(q_instance, np_ratings, epochs=100, verbose=0)
-
-        print(query_idx)
-        print(self.sc_x.inverse_transform(self.X_pool[query_idx]).astype(int), self.Y_pool[query_idx])
-        print(self.dataset[query_idx].astype(int))
-        print("Cappy learned the ratings:{} for {}".format(np_ratings, self.dataset[query_idx].astype(int)))
-
-        self.X_pool, self.Y_pool = np.delete(self.X_pool, query_idx, axis=0), np.delete(self.Y_pool, query_idx, axis=0)
-        self.dataset = np.delete(self.dataset, query_idx, axis=0)
-
-        # export the np to be loaded for the next participant, so we don't get to ask duplicated quality
-        np.savetxt(self.csv_url, self.dataset.astype(int), fmt='%i', delimiter=",")        
-        
-        return (self.learner, self.X_pool)
-
+        print("Cappy learned the ratings:{}\nfor q_instance:{}".format(
+            np_ratings, 
+            self.sc_x.inverse_transform(q_instance).astype(int)
+            )
+        )
+        return self.learner
 
     def test_printing(self, query_idx, queried_vals):
         pf_val = "Paraphrased" if queried_vals[3] == 1 else "Verbatim"

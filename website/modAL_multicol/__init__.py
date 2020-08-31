@@ -1,3 +1,3 @@
-from .models import ActiveLearner, Committee, CommitteeRegressor
+from .models import ActiveLearner, Committee
 
-__all__ = ['ActiveLearner', 'Committee', 'CommitteeRegressor']
+__all__ = ['ActiveLearner', 'Committee']

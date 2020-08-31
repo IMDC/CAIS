@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect 
 from django.shortcuts import render, redirect
 from django.conf import settings
 from .forms import ResponseForm
@@ -53,36 +53,43 @@ def consent(request):
         request.session["VIDEO_CATEGORY"] = Category.objects.filter(name="Video")[0].name
 
     if request.method == "POST" or None:
-        return HttpResponseRedirect("survey/")
+        return redirect(survey)
 
     return render(request, "consent.html")
+
+def survey(request):
+    form = ResponseForm(request.POST or None)
+    context = {"form": form}
+    request.session["uuid"] = form.uuid
+    if form.is_valid():
+        form.save()
+        return redirect(index)
+    else:
+        print(form.errors)
+    return render(request, "survey.html", context)
 
 
 def index(request):
     max_vid_count = 19 # 20 videos
-    
+
     print("request.session: value {}".format(request.session["SUBMIT_COUNT"]))
 
-    if request.session["SUBMIT_COUNT"] == max_vid_count: # request.session["SUBMIT_COUNT"] starts from 0, 
-        # if request.method == "POST" or None:
-        return HttpResponseRedirect("byebye/")        
+    if request.session["SUBMIT_COUNT"] == max_vid_count: # request.session["SUBMIT_COUNT"] starts from 0,        
+        return redirect(byebye)
+        
     else:
-        if request.session["SUBMIT_COUNT"] == 0:
-            # initiate the models..?
-            apps.get_app_config("home").set_x_pool()
+        # if request.session["SUBMIT_COUNT"] == 0:
+        if apps.get_app_config("home").count == 0:
+            apps.get_app_config("home").set_x_pool() # initiate the dataset..?
 
         # 1. get prediction from cappy backend
         query_idx, preds, queried_vals = apps.get_app_config("home").make_prediction()    
+
         if query_idx is None: # when there's no query_idx provided, we close the case
-            render(request, "byebye.html")
+            return render(request, "byebye.html")
 
         # 2. parse the prediction passed from cappy.
-        if isinstance(preds, np.ndarray):
-            preds = preds.flatten().astype(int).tolist()
-        elif isinstance(preds, list):
-            preds = list(map(lambda x: int(x), preds))
-        else:
-            print("UNHANDLED EXCEPTION")
+        preds = list(map(lambda x: int(x), preds))
         preds = json.dumps(preds)
 
         # 3. load the video
@@ -128,8 +135,8 @@ def client_to_view(request):
     client_rating = [int(i) for i in client_rating]
 
     client_list = list(map(lambda x: int(x), client_rating))
-    learner, X_pool = apps.get_app_config("home").learn_ratings(client_list)
-
+    learner = apps.get_app_config("home").learn_ratings(client_list)
+    
     resp = Response.objects.filter(interview_uuid=request.session["uuid"]).last()
     if request.session["SUBMIT_COUNT"] == 0:
         if Blobby.objects.filter(name="learnedModel").exists():
@@ -145,7 +152,7 @@ def client_to_view(request):
             blob.save()
 
     if request.method == "POST":
-        print("type of client rating", client_rating)
+        print("Client rating", client_rating)
         category = Category.objects.filter(name=request.session["VIDEO_CATEGORY"])[0]
 
         if Question.objects.filter(text="videoresp").exists():
@@ -177,22 +184,9 @@ def client_to_view(request):
             return HttpResponse("unsuccessful")
 
 
-
-def question_view(request):
-    form = ResponseForm(request.POST or None)
-    context = {"form": form}
-    request.session["uuid"] = form.uuid
-    if form.is_valid():
-        form.save()
-        return HttpResponseRedirect("home/")
-    else:
-        print(form.errors)
-    return render(request, "survey.html", context)
-
 def noconsent(request):
     email = "somang@mie.utoronto.ca"
     return render(request, "noconsent.html", {"email": email})
-
 
 def byebye(request):
     print("STUDY FINISHED WITH THIS PARTICIPANT.")

@@ -13,8 +13,8 @@ from modAL_multicol.models.base import BaseLearner, BaseCommittee
 from modAL_multicol.utils.validation import check_class_labels, check_class_proba
 from modAL_multicol.utils.data import modALinput
 from modAL_multicol.uncertainty import uncertainty_sampling
-from modAL_multicol.disagreement import vote_entropy_sampling, max_std_sampling
-from modAL_multicol.acquisition import max_EI
+from modAL_multicol.disagreement import vote_entropy_sampling
+
 
 """
 Classes for active learning algorithms
@@ -104,143 +104,6 @@ class ActiveLearner(BaseLearner):
             self._fit_on_new(X, y, bootstrap=bootstrap, **fit_kwargs)
 
 
-"""
-Classes for Bayesian optimization
----------------------------------
-"""
-
-
-class BayesianOptimizer(BaseLearner):
-    """
-    This class is an abstract model of a Bayesian optimizer algorithm.
-
-    Args:
-        estimator: The estimator to be used in the Bayesian optimization. (For instance, a
-            GaussianProcessRegressor.)
-        query_strategy: Function providing the query strategy for Bayesian optimization,
-            for instance, modAL.acquisitions.max_EI.
-        X_training: Initial training samples, if available.
-        y_training: Initial training labels corresponding to initial training samples.
-        bootstrap_init: If initial training data is available, bootstrapping can be done during the first training.
-            Useful when building Committee models with bagging.
-        **fit_kwargs: keyword arguments.
-
-    Attributes:
-        estimator: The estimator to be used in the Bayesian optimization.
-        query_strategy: Function providing the query strategy for Bayesian optimization.
-        X_training: If the model hasn't been fitted yet it is None, otherwise it contains the samples
-            which the model has been trained on.
-        y_training: The labels corresponding to X_training.
-        X_max: argmax of the function so far.
-        y_max: Max of the function so far.
-
-    Examples:
-
-        >>> import numpy as np
-        >>> from functools import partial
-        >>> from sklearn.gaussian_process import GaussianProcessRegressor
-        >>> from sklearn.gaussian_process.kernels import Matern
-        >>> from modAL.models import BayesianOptimizer
-        >>> from modAL.acquisition import optimizer_PI, optimizer_EI, optimizer_UCB, max_PI, max_EI, max_UCB
-        >>>
-        >>> # generating the data
-        >>> X = np.linspace(0, 20, 1000).reshape(-1, 1)
-        >>> y = np.sin(X)/2 - ((10 - X)**2)/50 + 2
-        >>>
-        >>> # assembling initial training set
-        >>> X_initial, y_initial = X[150].reshape(1, -1), y[150].reshape(1, -1)
-        >>>
-        >>> # defining the kernel for the Gaussian process
-        >>> kernel = Matern(length_scale=1.0)
-        >>>
-        >>> tr = 0.1
-        >>> PI_tr = partial(optimizer_PI, tradeoff=tr)
-        >>> PI_tr.__name__ = 'PI, tradeoff = %1.1f' % tr
-        >>> max_PI_tr = partial(max_PI, tradeoff=tr)
-        >>>
-        >>> acquisitions = zip(
-        ...     [PI_tr, optimizer_EI, optimizer_UCB],
-        ...     [max_PI_tr, max_EI, max_UCB],
-        ... )
-        >>>
-        >>> for acquisition, query_strategy in acquisitions:
-        ...     # initializing the optimizer
-        ...     optimizer = BayesianOptimizer(
-        ...         estimator=GaussianProcessRegressor(kernel=kernel),
-        ...         X_training=X_initial, y_training=y_initial,
-        ...         query_strategy=query_strategy
-        ...     )
-        ...
-        ...     for n_query in range(5):
-        ...         # query
-        ...         query_idx, query_inst = optimizer.query(X)
-        ...         optimizer.teach(X[query_idx].reshape(1, -1), y[query_idx].reshape(1, -1))
-    """
-    def __init__(self,
-                 estimator: BaseEstimator,
-                 query_strategy: Callable = max_EI,
-                 X_training: Optional[modALinput] = None,
-                 y_training: Optional[modALinput] = None,
-                 bootstrap_init: bool = False,
-                 **fit_kwargs) -> None:
-        super(BayesianOptimizer, self).__init__(estimator, query_strategy,
-                                                X_training, y_training, bootstrap_init, **fit_kwargs)
-        # setting the maximum value
-        if self.y_training is not None:
-            max_idx = np.argmax(self.y_training)
-            self.X_max = self.X_training[max_idx]
-            self.y_max = self.y_training[max_idx]
-        else:
-            self.X_max = None
-            self.y_max = -np.inf
-
-    def _set_max(self, X: modALinput, y: modALinput) -> None:
-        max_idx = np.argmax(y)
-        y_max = y[max_idx]
-        if y_max > self.y_max:
-            self.y_max = y_max
-            self.X_max = X[max_idx]
-
-    def get_max(self) -> Tuple:
-        """
-        Gives the highest value so far.
-
-        Returns:
-            The location of the currently best value and the value itself.
-        """
-        return self.X_max, self.y_max
-
-    def teach(self, X: modALinput, y: modALinput, bootstrap: bool = False, only_new: bool = False, **fit_kwargs) -> None:
-        """
-        Adds X and y to the known training data and retrains the predictor with the augmented dataset. This method also
-        keeps track of the maximum value encountered in the training data.
-
-        Args:
-            X: The new samples for which the values are supplied.
-            y: Values corresponding to the new instances in X.
-            bootstrap: If True, training is done on a bootstrapped dataset. Useful for building Committee models with
-                bagging. (Default value = False)
-            only_new: If True, the model is retrained using only X and y, ignoring the previously provided examples.
-                Useful when working with models where the .fit() method doesn't retrain the model from scratch (for
-                example, in tensorflow or keras).
-            **fit_kwargs: Keyword arguments to be passed to the fit method of the predictor.
-        """
-        self._add_training_data(X, y)
-
-        if not only_new:
-            self._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
-        else:
-            self._fit_on_new(X, y, bootstrap=bootstrap, **fit_kwargs)
-
-        self._set_max(X, y)
-
-
-"""
-Classes for committee based algorithms
---------------------------------------
-"""
-
-
 class Committee(BaseCommittee):
     """
     This class is an abstract model of a committee-based active learning algorithm.
@@ -292,6 +155,7 @@ class Committee(BaseCommittee):
     def __init__(self, learner_list: List[ActiveLearner], given_classes = None, query_strategy: Callable = vote_entropy_sampling) -> None:
         super().__init__(learner_list, query_strategy)
         self._set_classes(given_classes) 
+        self.queried_X = {}
 
     def save_model(self, *filenames):
         """
@@ -461,93 +325,3 @@ class Committee(BaseCommittee):
             proba[:, learner_idx, :] = tmp_p
         return proba
 
-
-class CommitteeRegressor(BaseCommittee):
-    """
-    This class is an abstract model of a committee-based active learning regression.
-
-    Args:
-        learner_list: A list of ActiveLearners forming the CommitteeRegressor.
-        query_strategy: Query strategy function.
-
-    Examples:
-
-        >>> import numpy as np
-        >>> import matplotlib.pyplot as plt
-        >>> from sklearn.gaussian_process import GaussianProcessRegressor
-        >>> from sklearn.gaussian_process.kernels import WhiteKernel, RBF
-        >>> from modAL.models import ActiveLearner, CommitteeRegressor
-        >>>
-        >>> # generating the data
-        >>> X = np.concatenate((np.random.rand(100)-1, np.random.rand(100)))
-        >>> y = np.abs(X) + np.random.normal(scale=0.2, size=X.shape)
-        >>>
-        >>> # initializing the regressors
-        >>> n_initial = 10
-        >>> kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e3)) + WhiteKernel(noise_level=1, noise_level_bounds=(1e-10, 1e+1))
-        >>>
-        >>> initial_idx = list()
-        >>> initial_idx.append(np.random.choice(range(100), size=n_initial, replace=False))
-        >>> initial_idx.append(np.random.choice(range(100, 200), size=n_initial, replace=False))
-        >>> learner_list = [ActiveLearner(
-        ...                         estimator=GaussianProcessRegressor(kernel),
-        ...                         X_training=X[idx].reshape(-1, 1), y_training=y[idx].reshape(-1, 1)
-        ...                 )
-        ...                 for idx in initial_idx]
-        >>>
-        >>> # query strategy for regression
-        >>> def ensemble_regression_std(regressor, X):
-        ...     _, std = regressor.predict(X, return_std=True)
-        ...     query_idx = np.argmax(std)
-        ...     return query_idx, X[query_idx]
-        >>>
-        >>> # initializing the CommitteeRegressor
-        >>> committee = CommitteeRegressor(
-        ...     learner_list=learner_list,
-        ...     query_strategy=ensemble_regression_std
-        ... )
-        >>>
-        >>> # active regression
-        >>> n_queries = 10
-        >>> for idx in range(n_queries):
-        ...     query_idx, query_instance = committee.query(X.reshape(-1, 1))
-        ...     committee.teach(X[query_idx].reshape(-1, 1), y[query_idx].reshape(-1, 1))
-    """
-    def __init__(self, learner_list: List[ActiveLearner], query_strategy: Callable = max_std_sampling) -> None:
-        super().__init__(learner_list, query_strategy)
-
-    def predict(self, X: modALinput, return_std: bool = False, **predict_kwargs) -> Any:
-        """
-        Predicts the values of the samples by averaging the prediction of each regressor.
-
-        Args:
-            X: The samples to be predicted.
-            **predict_kwargs: Keyword arguments to be passed to the :meth:`vote` method of the CommitteeRegressor.
-
-        Returns:
-            The predicted class labels for X.
-        """
-        vote = self.vote(X, **predict_kwargs)
-        if not return_std:
-            return np.mean(vote, axis=1)
-        else:
-            return np.mean(vote, axis=1), np.std(vote, axis=1)
-
-    def vote(self, X: modALinput, **predict_kwargs):
-        """
-        # edited
-        Predicts the values for the supplied data for each regressor in the CommitteeRegressor.
-
-        Args:
-            X: The samples to cast votes.
-            **predict_kwargs: Keyword arguments to be passed to :meth:`predict` of the learners.
-
-        Returns:
-            The predicted value for each regressor in the CommitteeRegressor and each sample in X.
-        """
-        prediction = np.zeros(shape=(len(X), len(self.learner_list)))
-
-        for learner_idx, learner in enumerate(self.learner_list):
-            prediction[:, learner_idx] = learner.predict(X, **predict_kwargs).reshape(-1, )
-
-        return prediction
