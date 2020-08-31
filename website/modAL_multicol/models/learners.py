@@ -359,11 +359,26 @@ class Committee(BaseCommittee):
         """
         # getting average certainties
         proba = self.predict_proba(X, **predict_proba_kwargs)
-        
-        if proba.shape[1] > 4: # multi output flatten 
+
+        if proba.shape[1] > 4: # multi output flatten, proba.shape[1] == 20
             preds = np.split(proba[0], int(proba.shape[1]/self.n_classes_))
-            preds = list(map(lambda x: np.argmax(x), preds)) # finding the sample-wise max probability
-            return preds
+            
+            # print("preds@predict in learners.py", preds)
+
+            fin_preds = []
+            for c in range(len(preds)):
+                col = preds[c]
+                rate_idx = np.argwhere(col > 0.5) 
+                # 0.5 defined by the paper Cheng, J., Wang, Z., & Pollastri, G. (2008, June). 
+                # A neural network approach to ordinal regression. 
+                # In 2008 IEEE International Joint Conference on Neural Networks (IEEE World Congress on Computational Intelligence) (pp. 1279-1284). IEEE.
+                if rate_idx.size == 0:
+                    fin_preds.append(np.argmax(col)) # regular implementation for data format with one-hot coding and so
+                else:
+                    fin_preds.append(rate_idx[-1][0]) # the paper implmenetation
+            # finding the sample-wise max probability
+            # print("preds after argmax@predict in learners.py", fin_preds)
+            return fin_preds
         else:
             max_proba_idx = np.argmax(proba, axis=1) # finding the sample-wise max probability
             return self.classes_[max_proba_idx] # translating label indices to labels

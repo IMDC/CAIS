@@ -176,6 +176,8 @@ def client_to_view(request):
         else:
             return HttpResponse("unsuccessful")
 
+
+
 def question_view(request):
     form = ResponseForm(request.POST or None)
     context = {"form": form}

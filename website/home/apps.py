@@ -23,7 +23,7 @@ class ActiveLearnerConfig(AppConfig):
         return (self.learned_model, self.X_pool)
 
     def set_x_pool(self):
-        self.act_model.get_hearing_group()
+        self.act_model.get_data_for_hearing_group()
         
     def get_prediction(self):
         return (self.query_idx, self.preds, self.queried_val)
