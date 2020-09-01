@@ -206,10 +206,12 @@ function setCurrentStarRating(key, value) {
 
 function updateUserRating(ratingsArr){    
     var ratingsArr = JSON.stringify(ratingsArr);   
+    console.log("Rating submission:", ratingsArr);
+    // alert("Rating submission:"+ratingsArr);
 
     $.ajax({
         type: 'POST',
-        url: URL,
+        url: "/client_to_view/",
         headers: { "X-CSRFToken": csrftoken },
         data: {client_id: ratingsArr}, // this passes the value to the views.py
         success: function( data ){
@@ -218,7 +220,7 @@ function updateUserRating(ratingsArr){
     });
 }
 
-function submitRatings(){
+function submitRatings(){    
     if (predictionDefault) {
         updateUserRating(defaultRatingsArray);
     } else {

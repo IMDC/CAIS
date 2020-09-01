@@ -45,7 +45,7 @@ function modalHandler(element){
     $('#ModalCenter').on('shown.bs.modal', handletrivia());
 };
 
-function validateForm(){
+function checkForm(){
     let formValidation = true;
     console.log("validateForm()->starsetBooleans: ");
     for (var i in starsetBooleans){

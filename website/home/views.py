@@ -131,29 +131,9 @@ def index(request):
 
 
 def client_to_view(request):
-    client_rating = json.loads(request.POST["client_id"])
-    client_rating = [int(i) for i in client_rating]
-
-    client_list = list(map(lambda x: int(x), client_rating))
-    learner = apps.get_app_config("home").learn_ratings(client_list)
-    
-    resp = Response.objects.filter(interview_uuid=request.session["uuid"]).last()
-    if request.session["SUBMIT_COUNT"] == 0:
-        if Blobby.objects.filter(name="learnedModel").exists():
-            new_blob = Blobby.objects.create(response=resp, name="originalModel")
-            new_blob.set_data_one(MODIFIEDH5_ONE)
-            new_blob.set_data_two(MODIFIEDH5_TWO)
-            new_blob.save()
-        else:  # If no Blob rows exist, this will run the first time.
-            learner.save_model(ORIGINALH5_ONE, ORIGINALH5_TWO)
-            blob = Blobby.objects.create(response=resp, name="originalModel")
-            blob.set_data_one(ORIGINALH5_ONE)
-            blob.set_data_two(ORIGINALH5_TWO)
-            blob.save()
-
     if request.method == "POST":
-        print("Client rating", client_rating)
         category = Category.objects.filter(name=request.session["VIDEO_CATEGORY"])[0]
+        
 
         if Question.objects.filter(text="videoresp").exists():
             q = Question.objects.filter(text="videoresp")[0]
@@ -161,28 +141,44 @@ def client_to_view(request):
             q = Question.objects.create(text="videoresp", category=category, question_type='video')
         query_idx, preds, queried_val = apps.get_app_config("home").get_prediction()
 
-        clip_title_create = request.session["video_title"]
+        resp = Response.objects.filter(interview_uuid=request.session["uuid"]).last()
+        
+        client_rating = json.loads(request.POST["client_id"])
+        client_rating = [int(i) for i in client_rating]
+        print("Client rating", client_rating)
+
+        client_list = list(map(lambda x: int(x), client_rating))
         AnswerVideo.objects.create(
             caption_title="caption_title",
-            clip_title=clip_title_create,
+            clip_title=request.session["video_title"],
             delay=queried_val[0], speed=queried_val[1], mw=queried_val[2], pv=queried_val[3],
             delay_pred=preds[0], speed_pred=preds[1], mw_pred=preds[2], pv_pred=preds[3],
             question=q, response=resp, category=category, body=client_list
         )
-
+        
+        learner = apps.get_app_config("home").learn_ratings(client_list)
+        
+        if request.session["SUBMIT_COUNT"] == 0:
+            if Blobby.objects.filter(name="learnedModel").exists():
+                new_blob = Blobby.objects.create(response=resp, name="originalModel")
+                new_blob.set_data_one(MODIFIEDH5_ONE)
+                new_blob.set_data_two(MODIFIEDH5_TWO)
+                new_blob.save()
+            else:  # If no Blob rows exist, this will run the first time.
+                learner.save_model(ORIGINALH5_ONE, ORIGINALH5_TWO)
+                blob = Blobby.objects.create(response=resp, name="originalModel")
+                blob.set_data_one(ORIGINALH5_ONE)
+                blob.set_data_two(ORIGINALH5_TWO)
+                blob.save()
         if request.session["SUBMIT_COUNT"] > 0:
             learner.save_model(MODIFIEDH5_ONE, MODIFIEDH5_TWO)
             blob = Blobby.objects.create(response=resp, name="learnedModel")
             blob.set_data_one(MODIFIEDH5_ONE)
             blob.set_data_two(MODIFIEDH5_TWO)
             blob.save()
-            try:
-                return HttpResponse("success")
-            except Exception as e:
-                print(e)
-        else:
-            return HttpResponse("unsuccessful")
-
+        
+    return HttpResponse("success")        
+        
 
 def noconsent(request):
     email = "somang@mie.utoronto.ca"

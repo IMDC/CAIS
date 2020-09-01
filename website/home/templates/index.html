@@ -8,9 +8,9 @@
 {{  triviaQuestions | json_script:"trivia-questions" }}
 <script type="text/javascript" src="{% static 'home/trivia.js' %}?{% now 'U' %}"></script>
 <script type="text/javascript" src="{% static 'home/timeCounter.js' %}?{% now 'U' %}"></script>
-<script xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<!-- <script xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
   var URL = "{% url 'client_to_view' %}";
-</script>
+</script> -->
 <script type="text/javascript" src="{% static 'home/starRating.js' %}?{% now 'U' %}"></script>
 <script type="text/javascript" src="{% static 'home/index.js' %}?{% now 'U' %}"></script>
 
@@ -73,7 +73,7 @@
   
     <!-- right panel start here -->
     <div id="rightpane" class="col-xl-7 col-lg-7 col-md-7" style="padding-left: 0px;">
-      <form action="" id="ratingsForm" method="post" class="form-group" onsubmit = "return validateForm()">{% csrf_token %}
+      <form action="" id="ratingsForm" class="form-group" method="post" onsubmit="return checkForm()">{% csrf_token %}
         <div class="container">
           <div class="row"> 
             <div class="col-xl-6 col-lg-6 col-m-12 cappyHead">
