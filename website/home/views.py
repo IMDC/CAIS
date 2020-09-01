@@ -19,6 +19,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 
 import datetime
+import time
 import socket, errno
 
 
@@ -35,6 +36,11 @@ from datetime import date
 
 VIDCOUNT = 0
 REFRESH_COUNT = 0
+WAIT_SWITCH = False
+CUR_PREDS = 0
+CUR_QINSTANCE = 0 
+VIDEO_TITLE = ""
+CAPTION_TITLE = ""
 
 def consent(request):
     # request.session["RANDOM_TWO"] = sample((list(range(0, 81))), 2)
@@ -63,6 +69,8 @@ def survey(request):
     request.session["uuid"] = form.uuid
     if form.is_valid():
         form.save()
+        global WAIT_SWITCH
+        WAIT_SWITCH = True
         return redirect(index)
     else:
         print(form.errors)
@@ -75,88 +83,88 @@ def index(request):
     print("request.session: value {}".format(request.session["SUBMIT_COUNT"]))
 
     if request.session["SUBMIT_COUNT"] == max_vid_count: # request.session["SUBMIT_COUNT"] starts from 0,        
-        return redirect(byebye)
-        
+        return redirect(byebye)        
     else:
-        # if request.session["SUBMIT_COUNT"] == 0:
-        if apps.get_app_config("home").count == 0:
-            apps.get_app_config("home").set_x_pool() # initiate the dataset..?
+        if WAIT_SWITCH:
+            print("WAIT SWITCH@index", WAIT_SWITCH)
+            if apps.get_app_config("home").count == 0:
+                apps.get_app_config("home").set_x_pool() # initiate the dataset..?
+            # 1. get prediction from cappy backend
+            q_instance, preds, queried_vals = apps.get_app_config("home").make_prediction()
+            print(q_instance, preds, queried_vals.astype(int))
+            global CUR_PREDS
+            CUR_PREDS = preds
+            global CUR_QINSTANCE
+            CUR_QINSTANCE = q_instance
 
-        # 1. get prediction from cappy backend
-        query_idx, preds, queried_vals = apps.get_app_config("home").make_prediction()    
+            if q_instance is None: # when there's no query_idx provided, we close the case
+                return render(request, "byebye.html")
+            # 2. parse the prediction passed from cappy.
+            preds = list(map(lambda x: int(x), preds))
+            preds = json.dumps(preds)
+            # 3. load the video
+            rand_video_sess = random.choice(request.session["VIDEO_POOL"])
+            global VIDEO_TITLE
+            VIDEO_TITLE = rand_video_sess['fields']['video_name']
+            # request.session["video_title"] = rand_video_sess['fields']['video_name']
+            request.session["VIDEO_POOL"].remove(rand_video_sess)
+            request.session["LIST_VIDEOS"].append(rand_video_sess)        
+            genre = rand_video_sess['fields']['video_name']
+            print("VIDEO_POOL-length:{}, collection: {}".format(len(request.session["VIDEO_POOL"]), [vd['fields']['video_name'] for vd in request.session["LIST_VIDEOS"]]))
+            #  pick the two numbers for the trivia questions..
+            rand_numbs = random.sample(request.session["LIST_NUMBERS"], 2)
+            request.session["TRIVIA_QA"] = (rand_numbs)
+            request.session["LIST_NUMBERS"].remove(rand_numbs[0])
+            request.session["LIST_NUMBERS"].remove(rand_numbs[1])
+            # 4. get url to pass the CaptionFile obj
+            x = genre.split("/")[1].split(".")[0] + "_0.vtt"
+            url = settings.STATICFILES_DIRS[0] + "/captions/base_captions/{}".format(x)
+            from .caption_file import CaptionFile
+            CaptionFile(url, queried_vals)
+            global CAPTION_TITLE
+            CAPTION_TITLE = "captions/{}.vtt".format(CaptionName.objects.last().caption_title)
 
-        if query_idx is None: # when there's no query_idx provided, we close the case
-            return render(request, "byebye.html")
-
-        # 2. parse the prediction passed from cappy.
-        preds = list(map(lambda x: int(x), preds))
-        preds = json.dumps(preds)
-
-        # 3. load the video
-        rand_video_sess = random.choice(request.session["VIDEO_POOL"])
-        request.session["video_title"] = rand_video_sess['fields']['video_name']
-        request.session["VIDEO_POOL"].remove(rand_video_sess)
-        request.session["LIST_VIDEOS"].append(rand_video_sess)        
-        genre = rand_video_sess['fields']['video_name']
-        print("VIDEO_POOL-length:{}, collection: {}".format(len(request.session["VIDEO_POOL"]), [vd['fields']['video_name'] for vd in request.session["LIST_VIDEOS"]]))
-
-        #  pick the two numbers for the trivia questions..
-        rand_numbs = random.sample(request.session["LIST_NUMBERS"], 2)
-        request.session["TRIVIA_QA"] = (rand_numbs)
-        request.session["LIST_NUMBERS"].remove(rand_numbs[0])
-        request.session["LIST_NUMBERS"].remove(rand_numbs[1])
-        # print("Length of the trivia questions is now: {}".format(len(request.session["LIST_NUMBERS"])))
-
-        # 4. get url to pass the CaptionFile obj
-        x = genre.split("/")[1].split(".")[0] + "_0.vtt"
-        url = settings.STATICFILES_DIRS[0] + "/captions/base_captions/{}".format(x)
-        from .caption_file import CaptionFile
-        CaptionFile(url, queried_vals)
-        cappy_to_template = "captions/{}.vtt".format(CaptionName.objects.last().caption_title)
-
-        if request.method == "POST":
-            request.session["SUBMIT_COUNT"] = request.session["SUBMIT_COUNT"] + 1
-
-        # 5. passing context values to initiate rendering        
-        context = {
-            "triviaQuestions": request.session["TRIVIA_QA"],
-            "submitReady": request.session["SUBMIT_COUNT"],
-            "vid_count": VIDCOUNT,
-            "preds": preds,
-            "videourl": rand_video_sess['fields']['video_name'],
-            "caption_title": cappy_to_template,
-        }
-
-        return render(request, "index.html", context)
+            if request.method == "POST":
+                request.session["SUBMIT_COUNT"] = request.session["SUBMIT_COUNT"] + 1
+            # 5. passing context values to initiate rendering        
+            context = {
+                "triviaQuestions": request.session["TRIVIA_QA"],
+                "submitReady": request.session["SUBMIT_COUNT"],
+                "vid_count": VIDCOUNT,
+                "preds": preds,
+                "videourl": rand_video_sess['fields']['video_name'],
+                "caption_title": CAPTION_TITLE,
+            }
+            return render(request, "index.html", context)
+        else:
+            time.sleep(5)
 
 
 def client_to_view(request):
     if request.method == "POST":
-        category = Category.objects.filter(name=request.session["VIDEO_CATEGORY"])[0]
-        
-
-        if Question.objects.filter(text="videoresp").exists():
-            q = Question.objects.filter(text="videoresp")[0]
-        else:
-            q = Question.objects.create(text="videoresp", category=category, question_type='video')
-        query_idx, preds, queried_val = apps.get_app_config("home").get_prediction()
-
-        resp = Response.objects.filter(interview_uuid=request.session["uuid"]).last()
+        print("now in client_to_view function@views.py")
+        global WAIT_SWITCH
+        WAIT_SWITCH = False
+        print("WAIT SWITCH@client_to_view", WAIT_SWITCH)
         
         client_rating = json.loads(request.POST["client_id"])
         client_rating = [int(i) for i in client_rating]
-        print("Client rating", client_rating)
-
         client_list = list(map(lambda x: int(x), client_rating))
+        learner, queried_val = apps.get_app_config("home").learn_ratings(CUR_QINSTANCE, client_list)
+
+        print("cur_PREDS and queried_Val@client_to_view", CUR_PREDS, queried_val)
+        print("cur_qinstance@client_to_view:", CUR_QINSTANCE)
+
+        category = Category.objects.filter(name=request.session["VIDEO_CATEGORY"])[0]
+        q = Question.objects.create(text="videoresp", category=category, question_type='video')
+        resp = Response.objects.filter(interview_uuid=request.session["uuid"]).last()
+
         AnswerVideo.objects.create(
-            caption_title="caption_title",
-            clip_title=request.session["video_title"],
-            delay=queried_val[0], speed=queried_val[1], mw=queried_val[2], pv=queried_val[3],
-            delay_pred=preds[0], speed_pred=preds[1], mw_pred=preds[2], pv_pred=preds[3],
+            caption_title=CAPTION_TITLE, clip_title=VIDEO_TITLE,
+            delay=queried_val[0][0], speed=queried_val[0][1], mw=queried_val[0][2], pv=queried_val[0][3],
+            delay_pred=CUR_PREDS[0], speed_pred=CUR_PREDS[1], mw_pred=CUR_PREDS[2], pv_pred=CUR_PREDS[3],
             question=q, response=resp, category=category, body=client_list
         )
-        
-        learner = apps.get_app_config("home").learn_ratings(client_list)
         
         if request.session["SUBMIT_COUNT"] == 0:
             if Blobby.objects.filter(name="learnedModel").exists():
@@ -176,8 +184,11 @@ def client_to_view(request):
             blob.set_data_one(MODIFIEDH5_ONE)
             blob.set_data_two(MODIFIEDH5_TWO)
             blob.save()
-        
-    return HttpResponse("success")        
+
+        WAIT_SWITCH = True
+        print("posted! WAIT_SWITCH IS NOW:", WAIT_SWITCH)        
+
+        return HttpResponse("success")        
         
 
 def noconsent(request):

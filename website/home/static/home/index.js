@@ -30,7 +30,7 @@ function handletrivia(){
                     $("#trivia-answer").css("color", "red");
                     $("#answerDiv").toggleClass("visible");
                 };
-            }, 6000);
+            }, 3000);
 
         }, 3000);
 

@@ -143,17 +143,15 @@ class ActiveLearningClient:
         
     def make_preds(self):
         query_idx, q_instance = self.learner.query(self.X_pool)
-
         queried_vals = self.sc_x.inverse_transform(q_instance)
         # get machine prediction to be displayed
-        machine_prediction = list(np.array(self.learner.predict(queried_vals)) + 1) # add 1 to show in 1-5 scale
-        print("machine prediction:", machine_prediction) # these values are +1 from what's predicted.
-
+        self.machine_prediction = list(np.array(self.learner.predict(queried_vals)) + 1) # add 1 to show in 1-5 scale
+        print("machine prediction:", self.machine_prediction) # these values are +1 from what's predicted.
         self.test_printing(query_idx, queried_vals[0])
-        return (query_idx, machine_prediction, queried_vals[0])
+        return (q_instance, self.machine_prediction, queried_vals[0])
 
-    def train_learner(self, query_idx, ratings):
-        q_instance = self.X_pool[query_idx]
+    def train_learner(self, q_instance, ratings):
+        tmp_queried_val = self.sc_x.inverse_transform(q_instance).astype(int)
         np_ratings = np.zeros(shape=(1, 20)) # in the shape of multiple columns, padd with zeros
         for c in [0,1,2,3]:
             tmp_start = c*5
@@ -166,12 +164,10 @@ class ActiveLearningClient:
         # we convert form to (1,20) not (,20)
         # therefore, the 0-4 range for index doesn't really matter because we convert from 1-5 range to 1,20 anyways.
         self.learner.teach(q_instance, np_ratings, epochs=100, verbose=0)
-        print("Cappy learned the ratings:{}\nfor q_instance:{}".format(
-            np_ratings, 
-            self.sc_x.inverse_transform(q_instance).astype(int)
-            )
-        )
-        return self.learner
+        
+        print("Cappy learning the ratings:{} for q_instance:{}\nwhich is {}".format(ratings, q_instance, tmp_queried_val))
+
+        return self.learner, tmp_queried_val
 
     def test_printing(self, query_idx, queried_vals):
         pf_val = "Paraphrased" if queried_vals[3] == 1 else "Verbatim"

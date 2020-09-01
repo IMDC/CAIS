@@ -207,7 +207,6 @@ function setCurrentStarRating(key, value) {
 function updateUserRating(ratingsArr){    
     var ratingsArr = JSON.stringify(ratingsArr);   
     console.log("Rating submission:", ratingsArr);
-    // alert("Rating submission:"+ratingsArr);
 
     $.ajax({
         type: 'POST',
@@ -217,15 +216,12 @@ function updateUserRating(ratingsArr){
         success: function( data ){
             console.log(data);
         }
-    });
+    });    
 }
 
-function submitRatings(){    
-    if (predictionDefault) {
-        updateUserRating(defaultRatingsArray);
-    } else {
-        updateUserRating(ratingsArray);
-    }
+function submitRatings(){
+    var tmparray = (predictionDefault) ? defaultRatingsArray : ratingsArray;
+    updateUserRating(tmparray);
 }
 
 function setRealValue(value, starset){ // Passing the value of index.js onStarClickListener's realvalue
