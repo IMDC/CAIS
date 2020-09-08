@@ -7,31 +7,18 @@ class Category(models.Model):
 
     def __str__(self):        
         return self.name
-    #
-    # def get_questions(self):
-    #     return Question.objects.filter(category=self)
 
 def validate_list(value):
     print("")
     '''takes a text value and verifies that there is at least one comma '''
-    # values = value.split(',')
-    # if len(values) < 2:
-    #     raise ValidationError(
-    #         "The selected field requires an associated list of choices. Choices must contain more than one item.")
-
+    
 class VideoGenerator(models.Model):
     TEXT, CAPTION = 'text', 'caption'
     VIDEO_TYPES = (CAPTION, 'caption')
 
     video_name = models.CharField(max_length=100, blank=True, null=True, default='')  # video text.
     caption_title = models.CharField(max_length=100, blank=True, null=True, default='')
-    # vtt_text = models.TextField(default='') # closed_captioning text
     question_type = models.CharField(max_length=200, default=TEXT)
-
-    # def save(self, *args, **kwargs):
-    #     if(self.question_type == VideoGenerator.TEXT):
-    #         print("valid question type, save")
-    #     super(VideoGenerator, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.video_name
@@ -92,7 +79,6 @@ class AnswerText(AnswerBase):
 
 class AnswerRadio(AnswerBase):
     body = models.CharField(max_length=200, blank=True, null=True, default='')
-
 
 class CaptionName(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -155,9 +141,6 @@ class AnswerVideo(AnswerBase):
     delay, speed, mw, pv = models.FloatField(), models.FloatField(), models.IntegerField(), models.IntegerField()
     delay_pred, speed_pred, mw_pred, pv_pred = models.FloatField(), models.FloatField(), models.FloatField(), models.IntegerField()
     body = models.CharField(max_length=200, blank=True, null=True, default='')
-    #
-    # def __init__(self):
-    #     return
 
     def set_values(self, caption_title, clip_title, raw_vals, machine_pred, user_ratings):
         self.delay, self.speed, self.mw, self.pv = raw_vals[0], raw_vals[1], raw_vals[2], raw_vals[3]

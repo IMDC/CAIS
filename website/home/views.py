@@ -35,29 +35,20 @@ from datetime import date
 
 
 VIDCOUNT = 0
-REFRESH_COUNT = 0
 WAIT_SWITCH = False
 CUR_PREDS = 0
 CUR_QINSTANCE = 0 
 VIDEO_TITLE = ""
 CAPTION_TITLE = ""
+LIST_NUMBERS = []
+SUBMIT_COUNT = 0
+WATCHED_VIDEOS = []
+VIDEO_POOL = []
+VIDEO_CATEGORY = ""
+UUID = ""
+TRIVIA_QA = ""
 
 def consent(request):
-    # request.session["RANDOM_TWO"] = sample((list(range(0, 81))), 2)
-    request.session["LIST_NUMBERS"] = list(range(0, 81))
-    request.session["SUBMIT_COUNT"] = 0
-    request.session["LIST_VIDEOS"] = []
-    serialized_obj = serializers.serialize('json', VideoGenerator.objects.all())
-    request.session["VIDEO_POOL"] = json.loads(serialized_obj)
-    global VIDCOUNT
-    VIDCOUNT = len(request.session["VIDEO_POOL"])
-
-    if Category.objects.filter(name="Video").exists():
-        request.session["VIDEO_CATEGORY"] = Category.objects.filter(name="Video")[0].name
-    else:
-        Category.objects.create(name="Video")
-        request.session["VIDEO_CATEGORY"] = Category.objects.filter(name="Video")[0].name
-
     if request.method == "POST" or None:
         return redirect(survey)
 
@@ -66,9 +57,23 @@ def consent(request):
 def survey(request):
     form = ResponseForm(request.POST or None)
     context = {"form": form}
-    request.session["uuid"] = form.uuid
+    global UUID
+    UUID = form.uuid
+
     if form.is_valid():
         form.save()
+        global LIST_NUMBERS
+        LIST_NUMBERS = list(range(0, 81))
+        global VIDEO_POOL
+        VIDEO_POOL = json.loads(serializers.serialize('json', VideoGenerator.objects.all()))
+        global VIDCOUNT
+        VIDCOUNT = len(VIDEO_POOL)
+
+        if Category.objects.filter(name="Video").count() < 1:
+            Category.objects.create(name="Video")
+        global VIDEO_CATEGORY
+        VIDEO_CATEGORY = Category.objects.filter(name="Video")[0].name
+
         global WAIT_SWITCH
         WAIT_SWITCH = True
         return redirect(index)
@@ -78,11 +83,9 @@ def survey(request):
 
 
 def index(request):
-    max_vid_count = 19 # 20 videos
-
-    print("request.session: value {}".format(request.session["SUBMIT_COUNT"]))
-
-    if request.session["SUBMIT_COUNT"] == max_vid_count: # request.session["SUBMIT_COUNT"] starts from 0,        
+    max_vid_count = 20 # 20 videos
+    global VIDEO_POOL
+    if len(VIDEO_POOL)==0: # Starts from 0,        
         return redirect(byebye)        
     else:
         if WAIT_SWITCH:
@@ -103,33 +106,37 @@ def index(request):
             preds = list(map(lambda x: int(x), preds))
             preds = json.dumps(preds)
             # 3. load the video
-            rand_video_sess = random.choice(request.session["VIDEO_POOL"])
+            rand_video_sess = random.choice(VIDEO_POOL)
             global VIDEO_TITLE
             VIDEO_TITLE = rand_video_sess['fields']['video_name']
-            # request.session["video_title"] = rand_video_sess['fields']['video_name']
-            request.session["VIDEO_POOL"].remove(rand_video_sess)
-            request.session["LIST_VIDEOS"].append(rand_video_sess)        
-            genre = rand_video_sess['fields']['video_name']
-            print("VIDEO_POOL-length:{}, collection: {}".format(len(request.session["VIDEO_POOL"]), [vd['fields']['video_name'] for vd in request.session["LIST_VIDEOS"]]))
+            VIDEO_POOL.remove(rand_video_sess)
+            global WATCHED_VIDEOS
+            WATCHED_VIDEOS.append(rand_video_sess)
+            
+            print("VIDEO_POOL-length:{}, collection: {}".format(len(VIDEO_POOL), [vd['fields']['video_name'] for vd in WATCHED_VIDEOS]))
             #  pick the two numbers for the trivia questions..
-            rand_numbs = random.sample(request.session["LIST_NUMBERS"], 2)
-            request.session["TRIVIA_QA"] = (rand_numbs)
-            request.session["LIST_NUMBERS"].remove(rand_numbs[0])
-            request.session["LIST_NUMBERS"].remove(rand_numbs[1])
+            global LIST_NUMBERS
+            rand_numbs = random.sample(LIST_NUMBERS, 2)
+            global TRIVIA_QA
+            TRIVIA_QA = (rand_numbs)
+            LIST_NUMBERS.remove(rand_numbs[0])
+            LIST_NUMBERS.remove(rand_numbs[1])
+
             # 4. get url to pass the CaptionFile obj
-            x = genre.split("/")[1].split(".")[0] + "_0.vtt"
+            x = VIDEO_TITLE.split("/")[1].split(".")[0] + "_0.vtt"
             url = settings.STATICFILES_DIRS[0] + "/captions/base_captions/{}".format(x)
             from .caption_file import CaptionFile
             CaptionFile(url, queried_vals)
             global CAPTION_TITLE
             CAPTION_TITLE = "captions/{}.vtt".format(CaptionName.objects.last().caption_title)
 
+            global SUBMIT_COUNT
             if request.method == "POST":
-                request.session["SUBMIT_COUNT"] = request.session["SUBMIT_COUNT"] + 1
+                SUBMIT_COUNT = SUBMIT_COUNT + 1
             # 5. passing context values to initiate rendering        
             context = {
-                "triviaQuestions": request.session["TRIVIA_QA"],
-                "submitReady": request.session["SUBMIT_COUNT"],
+                "triviaQuestions": TRIVIA_QA,
+                "submitReady": apps.get_app_config("home").count,
                 "vid_count": VIDCOUNT,
                 "preds": preds,
                 "videourl": rand_video_sess['fields']['video_name'],
@@ -138,6 +145,7 @@ def index(request):
             return render(request, "index.html", context)
         else:
             time.sleep(5)
+            return index(request)
 
 
 def client_to_view(request):
@@ -155,9 +163,9 @@ def client_to_view(request):
         print("cur_PREDS and queried_Val@client_to_view", CUR_PREDS, queried_val)
         print("cur_qinstance@client_to_view:", CUR_QINSTANCE)
 
-        category = Category.objects.filter(name=request.session["VIDEO_CATEGORY"])[0]
-        q = Question.objects.create(text="videoresp", category=category, question_type='video')
-        resp = Response.objects.filter(interview_uuid=request.session["uuid"]).last()
+        category = Category.objects.filter(name=VIDEO_CATEGORY)[0]
+        q = Question.objects.filter(text="videoresp")[0]
+        resp = Response.objects.filter(interview_uuid=UUID).last()
 
         AnswerVideo.objects.create(
             caption_title=CAPTION_TITLE, clip_title=VIDEO_TITLE,
@@ -166,28 +174,22 @@ def client_to_view(request):
             question=q, response=resp, category=category, body=client_list
         )
         
-        if request.session["SUBMIT_COUNT"] == 0:
-            if Blobby.objects.filter(name="learnedModel").exists():
-                new_blob = Blobby.objects.create(response=resp, name="originalModel")
-                new_blob.set_data_one(MODIFIEDH5_ONE)
-                new_blob.set_data_two(MODIFIEDH5_TWO)
-                new_blob.save()
-            else:  # If no Blob rows exist, this will run the first time.
-                learner.save_model(ORIGINALH5_ONE, ORIGINALH5_TWO)
-                blob = Blobby.objects.create(response=resp, name="originalModel")
-                blob.set_data_one(ORIGINALH5_ONE)
-                blob.set_data_two(ORIGINALH5_TWO)
-                blob.save()
-        if request.session["SUBMIT_COUNT"] > 0:
+        if SUBMIT_COUNT == 0:
+            # If no Blob rows exist, this will run the first time.
+            learner.save_model(ORIGINALH5_ONE, ORIGINALH5_TWO)
+            blob = Blobby.objects.create(response=resp, name="originalModel")
+            blob.set_data_one(ORIGINALH5_ONE)
+            blob.set_data_two(ORIGINALH5_TWO)
+            blob.save()
+        else:
             learner.save_model(MODIFIEDH5_ONE, MODIFIEDH5_TWO)
             blob = Blobby.objects.create(response=resp, name="learnedModel")
             blob.set_data_one(MODIFIEDH5_ONE)
             blob.set_data_two(MODIFIEDH5_TWO)
             blob.save()
-
+        
         WAIT_SWITCH = True
-        print("posted! WAIT_SWITCH IS NOW:", WAIT_SWITCH)        
-
+        print("posted! WAIT_SWITCH IS NOW:", WAIT_SWITCH)
         return HttpResponse("success")        
         
 

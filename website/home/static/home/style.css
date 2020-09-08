@@ -349,3 +349,24 @@ a {
   }
 
 }
+@media only screen and (min-width: 1440px) {
+  .starset{
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  .starset span{
+    display:inline-block;
+    margin-left: 8%;
+  }
+  .cappyText{
+    justify-content: center;
+    align-items: center;
+    line-height: 1.6;
+    font-size: 1rem;
+  }
+  .cappySubhead{
+    display: flex;
+    font-size: 1rem;
+  }
+
+}

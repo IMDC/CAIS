@@ -323,14 +323,18 @@ class BaseCommittee(ABC, BaseEstimator):
             be labelled upon query synthesis.
         """
         X = query_args[0]
-        # print("querying@base.py", X.shape)
+        # print(self.queried_X)
+
         if bool(self.queried_X): # if queried_X is not empty
             # we check if we can take out what was asked already
             kl = list(self.queried_X.keys())
-            X = np.delete(X, kl, axis=0)
-            print("querying@base.py -shape:{} deleted:{}".format(X.shape, kl))
-        
-        query_result = self.query_strategy(self, X)
+            new_X = np.delete(X, kl, axis=0)
+            print("querying@base.py -shape:{} deleted:{}".format(new_X.shape, kl))
+            query_result = self.query_strategy(self, new_X)
+        else:
+            query_result = self.query_strategy(self, X)
+
+        print(query_result[0][0], query_result[1][0])
         self.queried_X[query_result[0][0]] = query_result[1][0]
     
         return query_result

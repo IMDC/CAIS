@@ -109,6 +109,8 @@ class ActiveLearningClient:
             self.csv_url = dir_flag + "/deaf_{}_used.csv".format(DATASIZE)            
         elif hoh == deaf_or_hoh:
             self.csv_url = dir_flag + "/hoh_{}_used.csv".format(DATASIZE)
+        else:
+            self.csv_url = dir_flag + "/deaf_{}_used.csv".format(DATASIZE)
         
         print("HEARING GROUP:{}, loading:{}".format(deaf_or_hoh, self.csv_url))
         try:
@@ -145,10 +147,11 @@ class ActiveLearningClient:
         query_idx, q_instance = self.learner.query(self.X_pool)
         queried_vals = self.sc_x.inverse_transform(q_instance)
         # get machine prediction to be displayed
-        self.machine_prediction = list(np.array(self.learner.predict(queried_vals)) + 1) # add 1 to show in 1-5 scale
-        print("machine prediction:", self.machine_prediction) # these values are +1 from what's predicted.
+        machine_prediction = list(np.array(self.learner.predict(q_instance)) + 1) # add 1 to show in 1-5 scale
+        
+        print("machine prediction:", machine_prediction) # these values are +1 from what's predicted.
         self.test_printing(query_idx, queried_vals[0])
-        return (q_instance, self.machine_prediction, queried_vals[0])
+        return (q_instance, machine_prediction, queried_vals[0])
 
     def train_learner(self, q_instance, ratings):
         tmp_queried_val = self.sc_x.inverse_transform(q_instance).astype(int)

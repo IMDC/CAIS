@@ -61,7 +61,7 @@ def vote_entropy(committee: BaseCommittee, X: modALinput, **predict_proba_kwargs
     return entr
 
 def vote_entropy_sampling(committee: BaseCommittee, X: modALinput,
-                          n_instances: int = 1, random_tie_break=False,
+                          n_instances: int = 1, random_tie_break=True,
                           **disagreement_measure_kwargs) -> Tuple[np.ndarray, modALinput]:
     """
     Vote entropy sampling strategy.

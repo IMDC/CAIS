@@ -1,15 +1,5 @@
  function triviaFacts(randomValue){
-    // $.getJSON('./../../static/trivia/trivia_qa.json', function(json){
-    //     let question = json[randomValue].question;
-    //     let category = json[randomValue].category;
-    //     let answer = json[randomValue].answer;
-
-    //     console.log("Question: "+question+" Answer: "+ answer, " Category: ", category);
-        
-    //     document.getElementById("trivia-category").innerHTML = "<b>Category:</b> " + category;
-    //     document.getElementById("trivia-question").innerHTML = "<b>Question:</b> " + question;
-    //     document.getElementById("trivia-answer").innerHTML = "ANSWER: " + answer;
-    // });
+   
     $.getJSON('./../../static/trivia/wwtbam_qa.json', function(json){
         /**
          * json has {"question","A","B","C","D","answer"}

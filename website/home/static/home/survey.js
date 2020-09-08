@@ -29,10 +29,7 @@ $(document).ready(function(){
         $(this).siblings("li").css("background-color", "#e2e5de");
         $(this).siblings("li").find("label").css("color", "black");
     });
-    $("div form div ul li").first().click(function(){
-        alert("You may leave this study as we are currently focusing on Deaf or Hard of Hearing participants only.")
-    });
-    
+        
     //https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
     // SessionStorage propery similar to localStorage, sessionStorage is cleared when the page session ends though.
     if (typeof window.sessionStorage != undefined){
