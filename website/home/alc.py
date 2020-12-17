@@ -45,7 +45,8 @@ class ActiveLearningClient:
         model.add(Dense(units=20, activation='relu'))
         model.add(Dense(units=20, activation='sigmoid')) 
         # compile keras model
-        model.compile(loss=binary_crossentropy, optimizer='adam', metrics=[categorical_accuracy])
+        # model.compile(loss=binary_crossentropy, optimizer='adam', metrics=['binary_accuracy', self.full_multi_label_metric])
+        model.compile(loss=binary_crossentropy, optimizer='adam', metrics=['binary_accuracy'])
         return model
 
     def load_AL_models(self):

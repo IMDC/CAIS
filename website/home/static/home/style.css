@@ -100,17 +100,14 @@ hr {
 }
 .cappySubhead{
   display: flex;
-  /* justify-content: center;
-  align-items: center;
-  text-align: center;   */
-  font-size: 1.1rem;
+  font-size: 1.4vw;
 }
 .cappyText{
   justify-content: center;
   align-items: center;
   /* text-align: center; */
   line-height: 1.6;
-  font-size: 1.1rem;
+  font-size: 1.4vw;
 }
 .satisfaction-scale{
   /* color: #fff; */
@@ -119,6 +116,10 @@ hr {
   border-color: rgba(0,0,0,.125);
   font-size: 1.1rem;
   padding: 0.5rem 2.25rem 0.5rem 2.25rem !important;
+}
+
+.btn{
+  font-size: 1vw;
 }
 #inputHead {
   background-color: #fff;
@@ -132,7 +133,6 @@ hr {
 .scale-text{
   padding-left: 0px;
   padding-right: 0px;
-  font-size: 1rem;
   padding: 0.25rem 0.25rem !important;
 }
 
@@ -173,7 +173,7 @@ hr {
 }
 .likert li {
   display:inline-block;
-  width: 18%;
+  width: 5.5vw;
   text-align:center;
   vertical-align: top;
 }
@@ -189,25 +189,26 @@ hr {
   top:0;
 }
 .likert li label {
-  width:100%;
+  width:100%;  
+  font-size: 1vw;
 }
 
 
 /* below is for starset */
 .starset{
-  font-size: 2rem;
+  font-size: 2vw;
   text-align: center;
 }
 .starset span{
   display:inline-block;
-  margin-left: 10%;
+  margin-left: 1vw;
 }
 #inputstar1, #inputstar2, #inputstar3, #inputstar4{
     font-size: 1.6rem
 }
 .starset1, .starset2, .starset3, .starset4{
     padding-top: 0.3rem;
-    font-size:1.9rem;
+    /* font-size:1.9rem; */
 }
 .checked {
   /* color: rgb(226, 207, 37); */
@@ -242,8 +243,6 @@ a {
 .modal-lg{
   max-width: 80%;
 }
-
-
 .rating_row{    
   border-bottom: 1px solid;
 }
@@ -256,104 +255,7 @@ a {
   display:flex;
 }
 
-@media only screen and (max-width: 1024px) {
-
-  div#inputstar1 div, div#inputstar2 div, div#inputstar3 div, div#inputstar4 div{
-    font-size:1.2rem;
-  }
-  .starset1, .starset2, .starset3, .starset4 {
-    font-size:1.5rem;
-  }
-  .scale-text, .satisfaction-scale{
-    font-size:0.8rem;
-  }
-  .btn{
-    font-size:0.6rem;
-  }
-
-    
-  .likert {
-    list-style:none;
-    width:100%;
-    margin:0;
-    padding:0;
-    display:block;
-  }
-  .likert:before {
-    content: '';
-    position:relative;
-    top:9px;
-    left:2%;
-    display:block;
-    background-color:#efefef;
-    height:4px;
-    width:100%;
-  }
-  .likert li {
-    display:inline-block;
-    width: 26%;
-    text-align:center;
-    vertical-align: top;
-  }
-  .likert li span {
-    display:block;
-    position:relative;
-    top:0;
-  }
-  .likert li label {
-    width:100%;
-    font-size: 0.7rem;
-    margin-bottom: 0;
-  }
-  
-  .likert-input {
-    list-style:none;
-    width:100%;
-    margin:0;
-    padding:0;
-    display:block;
-  }
-  .likert-input:before {
-    content: '';
-    position:relative;
-    top:18px;
-    left:2%;
-    display:block;
-    background-color:#efefef;
-    height:4px;
-    width:100%;
-    z-index: -1;
-  }
-
-  .starset{
-    font-size: 2rem;
-    text-align: center;
-  }
-  .starset span{
-    display:inline-block;
-    margin-left: 8%;
-  }
-  .cappyText{
-    justify-content: center;
-    align-items: center;
-    /* text-align: center; */
-    line-height: 1.6;
-    font-size: 0.8rem;
-  }
-  .cappySubhead{
-    display: flex;
-    /* justify-content: center;
-    align-items: center;
-    text-align: center;   */
-    font-size: 0.8rem;
-  }
-
-}
 @media only screen and (min-width: 1440px) {
-  .starset{
-    font-size: 1.5rem;
-    text-align: center;
-  }
   .starset span{
     display:inline-block;
     margin-left: 8%;

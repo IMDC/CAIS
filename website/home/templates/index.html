@@ -48,22 +48,6 @@
         <track id='track' kind='captions' src="{% static caption_title|safe %}?{% now 'U' %}" default/>
       </video>
 
-      <div class="container">
-        <ul class="list-group">
-          <li class="list-group-item satisfaction-scale">Satisfaction levels</li>
-          <li class="list-group-item">
-            <ul class="likert">
-              <li><span class="fa fa-circle-o"></span><label>Strongly dissatisfied</label></li>
-              <li><span class="fa fa-circle-o"></span><label>Dissatisfied</label></li>
-              <li><span class="fa fa-circle-o"></span><label>Neither satisfied nor dissatisfied</label></li>
-              <li><span class="fa fa-circle-o"></span><label>Satisfied</label></li>
-              <li><span class="fa fa-circle-o"></span><label>Strongly satisfied</label></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-
-
       <!-- the hidden DOM to be used for storing pred values -->
       <i style="visibility: hidden;" id="s_pred"></i>
       <i style="visibility: hidden;" id="d_pred"></i>

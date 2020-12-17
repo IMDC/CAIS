@@ -227,7 +227,7 @@ class Committee(BaseCommittee):
         if proba.shape[1] > 4: # multi output flatten, proba.shape[1] == 20
             preds = np.split(proba[0], int(proba.shape[1]/self.n_classes_))
             
-            # print("preds@predict in learners.py", preds)
+            print("preds@predict in learners.py", preds)
 
             fin_preds = []
             for c in range(len(preds)):
@@ -241,7 +241,7 @@ class Committee(BaseCommittee):
                 else:
                     fin_preds.append(rate_idx[-1][0]) # the paper implmenetation
             # finding the sample-wise max probability
-            # print("preds after argmax@predict in learners.py", fin_preds)
+            print("preds after argmax@predict in learners.py", fin_preds)
             return fin_preds
         else:
             max_proba_idx = np.argmax(proba, axis=1) # finding the sample-wise max probability
@@ -303,7 +303,7 @@ class Committee(BaseCommittee):
                 rating_vals = np.array(list(map(lambda x: np.argmax(x, axis=1), splited_y)))
                 y_classes = rating_vals.transpose() # now let's stack up the splited list, indices of rating vote
                 prediction = y_classes if learner_idx == 0 else np.hstack((prediction, y_classes))
-
+        print(prediction)
         return prediction
 
     def vote_proba(self, X: modALinput, **predict_proba_kwargs) -> Any:
