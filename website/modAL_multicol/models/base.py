@@ -13,7 +13,7 @@ from sklearn.utils import check_X_y
 
 # from modAL.utils.data import data_vstack, modALinput
 import tensorflow as tf    
-graph = tf.get_default_graph()
+graph = tf.compat.v1.get_default_graph()
 from modAL_multicol.utils.data import data_vstack, modALinput
 
 if sys.version_info >= (3, 4):
