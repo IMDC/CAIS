@@ -5,6 +5,12 @@ Cappy was designed using the quality factors of Closed Captioning based on liter
 
 Cappy is still at the initiative stage but its core idea will be the future of the quality assessment in captions and further expansions.
 
+## requirements
+The repository was tested under Python 3.6
+django 2.2.13
+Keras 2.2.5
+tensorflow 1.15
+
 
 # More info...
 The background of this project was published in following papers:
