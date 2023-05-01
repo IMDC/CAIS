@@ -12,12 +12,12 @@ Keras==2.2.5
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 langcodes==2.0.0
-marisa-trie==0.7.5
+marisa-trie
 Markdown==3.2.1
 msgpack==1.0.0
 numpy==1.18.4
-pandas==1.0.3
-protobuf==3.11.3
+pandas
+protobuf==3.6.0
 python-dateutil==2.8.1
 pytz==2020.1
 PyYAML==5.3.1
