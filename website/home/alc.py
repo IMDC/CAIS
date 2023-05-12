@@ -100,7 +100,7 @@ class ActiveLearningClient:
         dir_flag = settings.STATICFILES_DIRS[0]
         deafend, deaf, hoh = 'I am Deafened', 'I identify as Deaf', 'I am Hard of Hearing'
 
-        q = Question.objects.filter(text="1. What statement best describes your relationship to the Deaf and/or Hard of Hearing Communities?")[0]
+        q = Question.objects.filter(text="What statement best describes your relationship to the Deaf and/or Hard of Hearing Communities?")[0]
         deaf_or_hoh = AnswerRadio.objects.filter(question=q).last().body
         
         self.csv_url = dir_flag + "/um_{}.csv".format(DATASIZE) # DEFAULT LOAD
