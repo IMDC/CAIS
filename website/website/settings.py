@@ -9,27 +9,29 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
+import environ
+from pathlib import Path
 import os
 import mimetypes
 
 mimetypes.add_type("application/octet-stream", ".vtt", True)
+env = environ.Env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'a1#is6o$x!4nn58o6&q_ocuxz%@i#h@#3n2ifmvlc6c=og7)7i'
+# SECRET_KEY = 'a1#is6o$x!4nn58o6&q_ocuxz%@i#h@#3n2ifmvlc6c=og7)7i'
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-$lko+#jpt#ehi5=ms9(6s%&6fsg%r2ag2xu_2zj1ibsj$pckud')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", True)
 
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'cappy.imdc.ca', 'http://127.0.0.1:8000', 'http://cappy.imdc.ca', 'localhost']
+# ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'cappy.imdc.ca', 'http://127.0.0.1:8000', 'http://cappy.imdc.ca', 'localhost']
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
+
 
 
 # Application definition
