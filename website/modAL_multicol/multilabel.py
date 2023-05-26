@@ -262,7 +262,7 @@ def avg_score(classifier: OneVsRestClassifier, X_pool: modALinput,
         The index of the instance from X_pool chosen to be labelled;
         the instance from X_pool chosen to be labelled.
     """
-
+    print("avg_score@multilabel.py")
     classwise_confidence = classifier.predict_proba(X_pool)
     classwise_predictions = classifier.predict(X_pool)
     classwise_scores = classwise_confidence*(classwise_predictions-1/2)

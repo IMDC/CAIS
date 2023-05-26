@@ -14,6 +14,7 @@ class ActiveLearnerConfig(AppConfig):
         self.act_model.get_data_for_hearing_group()
         
     def make_prediction(self):
+        print(self.act_model)
         q_instance, preds, queried_val = self.act_model.make_preds()
         return (q_instance, preds, queried_val)
 

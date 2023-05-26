@@ -94,6 +94,7 @@ def index(request):
                 apps.get_app_config("home").set_x_pool() # initiate the dataset..?
             # 1. get prediction from cappy backend
             q_instance, preds, queried_vals = apps.get_app_config("home").make_prediction()
+            
             print(q_instance, preds, queried_vals.astype(int))
             global CUR_PREDS
             CUR_PREDS = preds

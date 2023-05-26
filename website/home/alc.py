@@ -51,7 +51,7 @@ class ActiveLearningClient:
     def load_AL_models(self):
         n_members = 2 # initializing number of Committee members
         learner_list = list()
-
+        
         if not Blobby.objects.exists(): # participant number == 1
             # below for loop would only be launched for the very first participant...
             print("FIRST PARTICIPANT!")
@@ -84,6 +84,8 @@ class ActiveLearningClient:
         else: # participant number > 1, we load models
             dir_flag = settings.BASE_DIR
             orig_urls, mod_urls = [dir_flag+"/originalfirst.h5", dir_flag+"/originalsecond.h5"], [dir_flag+"/modifiedfirst.h5", dir_flag+"/modifiedsecond.h5"]
+
+            print(orig_urls, mod_urls)
 
             for member_idx in range(n_members):
                 model_url = orig_urls[member_idx] if Path(orig_urls[member_idx]).is_file() else mod_urls[member_idx]
