@@ -323,6 +323,12 @@ class BaseCommittee(ABC, BaseEstimator):
             be labelled upon query synthesis.
         """
         X = query_args[0]
+        
+        print(bool(self.queried_X))
+        print(X)
+        print(self)
+        print(self.avg_score)
+
         if bool(self.queried_X): # if queried_X is not empty
             # we check if we can take out what was asked already
             kl = list(self.queried_X.keys())
