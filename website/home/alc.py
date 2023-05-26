@@ -30,7 +30,7 @@ from modAL_multicol.uncertainty import uncertainty_sampling
 from .models import Blobby, Response, Question, AnswerRadio
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-DATASIZE = 20000 # 100000
+DATASIZE = 1000 #20000 # 100000
 
 class ActiveLearningClient:
 
