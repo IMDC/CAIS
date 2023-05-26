@@ -19,7 +19,7 @@ env = environ.Env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'a1#is6o$x!4nn58o6&q_ocuxz%@i#h@#3n2ifmvlc6c=og7)7i'
@@ -27,16 +27,17 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-$lko+#jpt#ehi5=ms
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DJANGO_DEBUG", True)
+DEBUG = env.bool("DJANGO_DEBUG", False)
 
-# ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'cappy.imdc.ca', 'http://127.0.0.1:8000', 'http://cappy.imdc.ca', 'localhost']
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '.pythonanywhere.com', 'http://127.0.0.1:8000', 'localhost']
+# ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['*'])
 
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'home.apps.ActiveLearnerConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
 
     # DataFlair #AJAX in Django
-
     'django.contrib.staticfiles',
     'debug_toolbar',
 ]
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 # Should come AFTER any other middleware that encodes the response's content, such as SessionMiddleware.
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', #add it exactlyhere
     'django.contrib.sessions.middleware.SessionMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -138,7 +139,6 @@ STATICFILES_DIRS = [
 ]
 STATICFILES_H5 = [
     os.path.join(BASE_DIR),
-
 ]
 
 MEDIA_URL = '/media/'
