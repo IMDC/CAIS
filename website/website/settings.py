@@ -27,7 +27,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-$lko+#jpt#ehi5=ms
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DJANGO_DEBUG", False)
+DEBUG = env.bool("DJANGO_DEBUG", True)
 
 ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '.pythonanywhere.com', 'http://127.0.0.1:8000', 'localhost']
 # ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['*'])

@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Condensed&display=swap');
+body, html { padding:0; margin:0; 
+    width:100%; 
+    min-height:100%;     
+    background-color: #FFFAFA;
+}
+body { 
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 1.7vmin;
+    line-height:1.5em; 
+    /* color: #525e67; */
+    color: #1f1625;
+}
+
+a { text-decoration:none; color:#0cbcf7; }
+a:hover { 
+    color:#2c3841; 
+    cursor: pointer;
+}
+
+
+p { 
+    font-family: 'Noto Sans', sans-serif;
+    }
+h2 {
+    display: block;
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    font-size: 1.5vmax;
+    font-weight: normal;
+}
+h3 {
+    margin-top: 1.2em;
+    margin-bottom: 0.8em;
+    font-size: 1.2vmax;
+    font-weight: normal;
+}
+
+.mobileonly { display:none !important; }
+
+.page{
+    margin-top: 20px;
+    /* margin-left: 5%; */
+    width: 90%;
+}
+
+.title {
+    position: relative;
+    font-size: 2.0vmax;
+    line-height:1.5em;
+    margin-top: 30px;
+    /* margin-left: 20px; */
+    width: 90%;
+}
+
+.stub p {
+    text-indent: 20px;
+    color: #1f1625;
+}
+.stub .tags {
+    display: block;
+    position: relative;
+    list-style: none;
+    overflow: hidden;    
+}
+
+.stub .tags li {
+    display: block;
+    float: left;
+    margin: 0;
+    padding: 0;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.stub .tags li span {
+    display: block;
+    background-color: #e4e9ec;
+    color: #2c3841;
+    text-transform: none;
+    font-size: 0.9em;
+    padding: 5px;
+    overflow: hidden;
+}
+    
+.consent-button-div{
+    text-align: center;
+    padding-bottom: 120px;
+}
+
+.consent-button, .consent-button-d{
+    border-radius: 14px;
+    width: 10rem;   
+    background-color: #d3e6aa;
+    color: #1f1625;
+}
+
+.consent-button:hover {
+    background-color: Green;
+    color: white;
+}
+
+.consent-button-d:hover {
+    background-color: red; /* Green */
+    color: white;
+}

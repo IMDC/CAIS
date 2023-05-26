@@ -55,7 +55,7 @@ class ActiveLearningClient:
         if not Blobby.objects.exists(): # participant number == 1
             # below for loop would only be launched for the very first participant...
             print("FIRST PARTICIPANT!")
-            self.csv_url = settings.STATICFILES_DIRS[0] + "/um_{}.csv".format(DATASIZE) # default, But MUST BE CHANGED for the actual learning.
+            self.csv_url = settings.STATICFILES_DIRS[0] + "/um_{}.csv".format(20000) # default, But MUST BE CHANGED for the actual learning.
             try:
                 df = pd.read_csv(self.csv_url, header=None, sep=',')            
                 tmp_dataset = np.array(df)
