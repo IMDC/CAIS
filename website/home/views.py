@@ -49,6 +49,10 @@ UUID = ""
 TRIVIA_QA = ""
 
 def consent(request):
+    apps.get_app_config("home").set_x_pool() # initiate the dataset..?
+    q_instance, preds, queried_vals = apps.get_app_config("home").make_prediction()
+    print(preds)
+    
     if request.method == "POST" or None:
         return redirect(survey)
 
