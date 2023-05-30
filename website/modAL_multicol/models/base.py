@@ -327,7 +327,7 @@ class BaseCommittee(ABC, BaseEstimator):
         print(bool(self.queried_X))
         print(X)
         print(self)
-        print(self.avg_score)
+        print(f"self.query_strategy:{self.query_strategy}")
 
         if bool(self.queried_X): # if queried_X is not empty
             # we check if we can take out what was asked already

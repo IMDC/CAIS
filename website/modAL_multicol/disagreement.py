@@ -80,7 +80,7 @@ def vote_entropy_sampling(committee: BaseCommittee, X: modALinput,
          the instances from X chosen to be labelled.
     """
     disagreement = vote_entropy(committee, X, **disagreement_measure_kwargs)
-    
+    print(f"disagreement:{disagreement}")
     if not random_tie_break:
         query_idx = multi_argmax(disagreement, n_instances=n_instances)
     else:
