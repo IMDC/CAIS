@@ -1,9 +1,15 @@
-# Cappy, the quality rater
+# Caption-quality Assessment Intelligent System, CAIS
 ## Closed Captioning assessment system using Artificial Intelligence ##
 Cappy allows to predict human subjective quality assessment ratings of Closed Captions from a caption file and a transcript file. 
 Cappy was designed using the quality factors of Closed Captioning based on literature and exploits Deep Neural Networks trained with data using statistical user modelling of Deaf and Hard of Hearing audiences, and the Active Learning case with Query By Committee strategy to implement the system.
 
 Cappy is still at the initiative stage but its core idea will be the future of the quality assessment in captions and further expansions.
+
+## requirements
+The repository was tested under Python 3.6
+django 2.2.13
+Keras 2.2.5
+tensorflow 1.15
 
 
 # More info...
