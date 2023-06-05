@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block body %}
+{% load static %}
+<div class="container">
+  <div class="content">
+
+    <p>
+      Please do not reload this page until finish, it will reset your choices.<br>      
+    </p>
+
+    <form action="" method="POST">
+      {% csrf_token %}
+      <div>
+        {% for field in form %}
+          <label class="label-inline">{{ field.label }}</label>
+          <div class="form-demog">{{ field }}</div>
+        {% endfor %}
+      </div>
+      <br>
+      <div>
+        <input class="button is-primary is-large" id="submitDemoq" type="submit" text="Next" onclick="submitMessage();"
+          data-target="placeholder" />
+      </div>      
+    </form>
+
+  </div>
+</div>
+<script type="text/javascript" src="{% static 'caisapp/survey.js' %}?{% now 'U' %}"></script>
+<link rel="stylesheet" href="{% static 'caisapp/survey.css' %}?{% now 'U' %}" type="text/css" />
+{% endblock %}

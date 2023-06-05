@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<!-- Basic Page Needs -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Closed Captioning quality assessment user study</title>
+	<meta name="description" content="Closed Captioning quality assessment user study.">
+	<meta name="author" content="Inclusive Desiang and Media Centre">
+
+	<!-- CSS -->
+	<link href="https://unpkg.com/sanitize.css" rel="stylesheet" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+	{% load static %}
+	<!-- <link rel="stylesheet" href="{% static 'home/style.css' %}?{% now 'U' %}" type="text/css"> -->
+
+	<!-- Javascript -->
+	<script src="https://vjs.zencdn.net/7.0.5/video.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<script type="text/javascript" src="{% static 'caisapp/csrf.js' %}?{% now 'U' %}"></script>	
+</head>
+
+<body>
+	<div class="section">
+		{% block body %}
+		{% endblock %}
+	</div>
+</body>
+
+</html>

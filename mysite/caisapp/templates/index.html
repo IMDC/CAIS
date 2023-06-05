@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<!-- <script lang="text/javascript">	
+	var pass1 = "imdc";
+	var password = prompt('Please enter the password:', '');
+	if (password!=pass1) {
+		window.location = "https://www.google.com/";
+	};	
+</script> -->
+
+
+<div class="container">
+
+	<div class="title">
+		Understanding the procedure of Closed Captioning quality assessment by Deaf or Hard of Hearing viewers
+	</div>
+	<div class="content">
+		<h3 class="subtitle">Study Description</h3>
+
+		<p><b>In this study,</b> we are investigating the quality assessment of Closed Captioning (CC) for four
+			different factors from a viewer point of view.<br>The four different factors include:</p>
+		<ol>
+			<li>Delay between caption appearance and audio (or visual);</li>
+			<li>Speed of caption presentation;</li>
+			<li>Number of missing words in a caption; and</li>
+			<li>Paraphrasing factor: i.e., where the captions are not verbatim.</li>
+		</ol>
+		<hr>
+		<p>This study has <b>three parts</b>:</p>
+		<ol>
+			<li>Pre-study demographic questionnaire section</li>
+			<li>Caption quality rating section:
+				<p>
+					You will be presented with a series of short video clips.<br>
+					The videos will have A.I. predicting human satisfaction ratings for each of the four quality
+					factors mentioned above.<br>
+					After watching each clip with captions,
+				</p>
+				<ol type="A">
+					<li>If you agree with the predictions, you can proceed to the next video.</li>
+					<li>If you disagree with the predictions, teach your satisfaction ratings.</li>
+				</ol>
+				<p>
+					After each submission, the A.I. will try learning from your input<br>
+					(even if you agree with the prediction, it will still learn from the consensus).<br>
+					Please wait (~ 20s) while the A.I. is learning from your input.
+				</p>
+			</li>
+			<li>
+				Semi-structured interview (via Zoom/Google Meet):<br>
+				You will be asked about four questions relating to the general experience of TV live Closed
+				Captioning service<br>
+				as well as your experience with the quality rating session in this study.
+			</li>
+		</ol>
+		
+		<div class="has-text-centered">
+			<form action="." method="POST">
+				{% csrf_token %}
+				<button class="button is-primary is-large"
+					onClick="this.className='button is-primary is-large is-loading';">Start</button>
+
+				<!-- <input class="button is-primary is-large" type="Submit" value="Start"
+					onClick="this.form.submit(); this.disabled=true; this.className='button is-primary is-large is-loading';" /> -->
+			</form>
+		</div>
+		<br>
+		<br>
+	</div>
+</div>
+{% endblock %}
