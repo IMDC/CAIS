@@ -1,6 +1,10 @@
 from django.apps import AppConfig
 
 class ActiveLearnerConfig(AppConfig):
+    # Default primary key field type
+    # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+    default_auto_field = 'django.db.models.AutoField'
+
     name = "home"
     verbose_name = "ActiveLearner"
 
