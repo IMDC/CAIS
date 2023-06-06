@@ -5,18 +5,15 @@
 {{  preds | json_script:"prediction-data" }}
 {{  submitReady | json_script:"submit-count" }}
 {{  vid_count | json_script:"vid-count"}}
-{{  triviaQuestions | json_script:"trivia-questions" }}
-<script type="text/javascript" src="{% static 'home/trivia.js' %}?{% now 'U' %}"></script>
-<script type="text/javascript" src="{% static 'home/timeCounter.js' %}?{% now 'U' %}"></script>
+
 <!-- <script xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
   var URL = "{% url 'client_to_view' %}";
 </script> -->
-<script type="text/javascript" src="{% static 'home/starRating.js' %}?{% now 'U' %}"></script>
-<script type="text/javascript" src="{% static 'home/index.js' %}?{% now 'U' %}"></script>
+<script type="text/javascript" src="{% static 'cais/index.js' %}?{% now 'U' %}"></script>
 
 
 <div class="alert alert-danger alert-dismissible" role="alert">
-  Please select Agree or Disagree and make sure to enter your own ratings for cappy.  
+  Please select Agree or Disagree and teach CAIS your ratings.
 </div>
 
 <div style="text-align: center">
@@ -25,14 +22,7 @@
             <div class="col-2">
             </div>
             <div class="col-8">
-              <h2 class="indexPageTitle" >Do you agree or disagree with Cappy?</h2>
-            </div>
-            <div class="col-2 helpModal">
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#helpModal">
-                <i class='fa fa-exclamation-circle'
-                 style="font-size:1.5rem; padding: 0 5px 0 0;">
-                 <span style="font-family:'Noto Sans', sans-serif;">Help</span></i>
-              </button>
+              <h2 class="indexPageTitle" >Do you agree or disagree with CAIS?</h2>
             </div>
         </div>
     </div>
@@ -61,7 +51,7 @@
         <div class="container">
           <div class="row"> 
             <div class="col-xl-6 col-lg-6 col-m-12 cappyHead">
-              <b>Cappy predicted that you would be </b>
+              <b>CAIS predicted that you would be </b>
             </div>
           </div>
 
