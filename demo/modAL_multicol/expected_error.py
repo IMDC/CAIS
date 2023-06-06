@@ -15,9 +15,14 @@ from modAL.utils.selection import multi_argmax, shuffled_argmax
 from modAL.uncertainty import _proba_uncertainty, _proba_entropy
 
 
-def expected_error_reduction(learner: ActiveLearner, X: modALinput, loss: str = 'binary',
-                             p_subsample: np.float = 1.0, n_instances: int = 1,
-                             random_tie_break: bool = False) -> Tuple[np.ndarray, modALinput]:
+def expected_error_reduction(
+    learner: ActiveLearner,
+    X: modALinput,
+    loss: str = "binary",
+    p_subsample: np.float = 1.0,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+) -> Tuple[np.ndarray, modALinput]:
     """
     Expected error reduction query strategy.
 
@@ -42,10 +47,12 @@ def expected_error_reduction(learner: ActiveLearner, X: modALinput, loss: str = 
         the instances from X chosen to be labelled.
     """
 
-    assert 0.0 <= p_subsample <= 1.0, 'p_subsample subsampling keep ratio must be between 0.0 and 1.0'
-    assert loss in ['binary', 'log'], 'loss must be \'binary\' or \'log\''
+    assert (
+        0.0 <= p_subsample <= 1.0
+    ), "p_subsample subsampling keep ratio must be between 0.0 and 1.0"
+    assert loss in ["binary", "log"], "loss must be 'binary' or 'log'"
 
-    expected_error = np.zeros(shape=(len(X), ))
+    expected_error = np.zeros(shape=(len(X),))
     possible_labels = np.unique(learner.y_training)
 
     try:
@@ -63,16 +70,23 @@ def expected_error_reduction(learner: ActiveLearner, X: modALinput, loss: str = 
             # estimate the expected error
             for y_idx, y in enumerate(possible_labels):
                 X_new = data_vstack((learner.X_training, np.expand_dims(x, axis=0)))
-                y_new = data_vstack((learner.y_training, np.array(y).reshape(1,)))
+                y_new = data_vstack(
+                    (
+                        learner.y_training,
+                        np.array(y).reshape(
+                            1,
+                        ),
+                    )
+                )
 
                 cloned_estimator.fit(X_new, y_new)
                 refitted_proba = cloned_estimator.predict_proba(X_reduced)
-                if loss is 'binary':
+                if loss is "binary":
                     nloss = _proba_uncertainty(refitted_proba)
-                elif loss is 'log':
+                elif loss is "log":
                     nloss = _proba_entropy(refitted_proba)
 
-                expected_error[x_idx] += np.sum(nloss)*X_proba[x_idx, y_idx]
+                expected_error[x_idx] += np.sum(nloss) * X_proba[x_idx, y_idx]
 
         else:
             expected_error[x_idx] = np.inf

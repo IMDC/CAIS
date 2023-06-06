@@ -13,9 +13,9 @@ from modAL.models.base import BaseCommittee, BaseLearner
 from modAL.uncertainty import classifier_uncertainty
 
 
-def select_cold_start_instance(X: modALinput,
-                               metric: Union[str, Callable],
-                               n_jobs: Union[int, None]) -> Tuple[int, modALinput]:
+def select_cold_start_instance(
+    X: modALinput, metric: Union[str, Callable], n_jobs: Union[int, None]
+) -> Tuple[int, modALinput]:
     """
     Define what to do if our batch-mode sampling doesn't have any labeled data -- a cold start.
 
@@ -40,20 +40,24 @@ def select_cold_start_instance(X: modALinput,
     """
     # Compute all pairwise distances in our unlabeled data and obtain the row-wise average for each of our records in X.
     n_jobs = n_jobs if n_jobs else 1
-    average_distances = np.mean(pairwise_distances(X, metric=metric, n_jobs=n_jobs), axis=0)
+    average_distances = np.mean(
+        pairwise_distances(X, metric=metric, n_jobs=n_jobs), axis=0
+    )
 
     # Isolate and return our best instance for labeling as the record with the least average distance.
     best_coldstart_instance_index = np.argmin(average_distances)
-    return best_coldstart_instance_index, X[best_coldstart_instance_index].reshape(1, -1)
+    return best_coldstart_instance_index, X[best_coldstart_instance_index].reshape(
+        1, -1
+    )
 
 
 def select_instance(
-        X_training: modALinput,
-        X_pool: modALinput,
-        X_uncertainty: np.ndarray,
-        mask: np.ndarray,
-        metric: Union[str, Callable],
-        n_jobs: Union[int, None]
+    X_training: modALinput,
+    X_pool: modALinput,
+    X_uncertainty: np.ndarray,
+    mask: np.ndarray,
+    metric: Union[str, Callable],
+    n_jobs: Union[int, None],
 ) -> Tuple[np.ndarray, modALinput, np.ndarray]:
     """
     Core iteration strategy for selecting another record from our unlabeled records.
@@ -94,13 +98,18 @@ def select_instance(
     # to every record in X_training. The result is an array of shape (n_samples, ).
 
     if n_jobs == 1 or n_jobs is None:
-        _, distance_scores = pairwise_distances_argmin_min(X_pool_masked.reshape(n_unlabeled, -1),
-                                                           X_training.reshape(n_labeled_records, -1),
-                                                           metric=metric)
+        _, distance_scores = pairwise_distances_argmin_min(
+            X_pool_masked.reshape(n_unlabeled, -1),
+            X_training.reshape(n_labeled_records, -1),
+            metric=metric,
+        )
     else:
-        distance_scores = pairwise_distances(X_pool_masked.reshape(n_unlabeled, -1),
-                                             X_training.reshape(n_labeled_records, -1),
-                                             metric=metric, n_jobs=n_jobs).min(axis=1)
+        distance_scores = pairwise_distances(
+            X_pool_masked.reshape(n_unlabeled, -1),
+            X_training.reshape(n_labeled_records, -1),
+            metric=metric,
+            n_jobs=n_jobs,
+        ).min(axis=1)
 
     similarity_scores = 1 / (1 + distance_scores)
 
@@ -114,15 +123,21 @@ def select_instance(
     unlabeled_indices = [i for i in range(n_pool) if mask[i]]
     best_instance_index = unlabeled_indices[best_instance_index_in_unlabeled]
     mask[best_instance_index] = 0
-    return best_instance_index, np.expand_dims(X_pool[best_instance_index], axis=0), mask
+    return (
+        best_instance_index,
+        np.expand_dims(X_pool[best_instance_index], axis=0),
+        mask,
+    )
 
 
-def ranked_batch(classifier: Union[BaseLearner, BaseCommittee],
-                 unlabeled: modALinput,
-                 uncertainty_scores: np.ndarray,
-                 n_instances: int,
-                 metric: Union[str, Callable],
-                 n_jobs: Union[int, None]) -> np.ndarray:
+def ranked_batch(
+    classifier: Union[BaseLearner, BaseCommittee],
+    unlabeled: modALinput,
+    uncertainty_scores: np.ndarray,
+    n_instances: int,
+    metric: Union[str, Callable],
+    n_jobs: Union[int, None],
+) -> np.ndarray:
     """
     Query our top :n_instances: to request for labeling.
 
@@ -143,12 +158,14 @@ def ranked_batch(classifier: Union[BaseLearner, BaseCommittee],
     # Make a local copy of our classifier's training data.
     # Define our record container and record the best cold start instance in the case of cold start.
     if classifier.X_training is None:
-        best_coldstart_instance_index, labeled = select_cold_start_instance(X=unlabeled, metric=metric, n_jobs=n_jobs)
+        best_coldstart_instance_index, labeled = select_cold_start_instance(
+            X=unlabeled, metric=metric, n_jobs=n_jobs
+        )
         instance_index_ranking = [best_coldstart_instance_index]
     elif classifier.X_training.shape[0] > 0:
         labeled = classifier.X_training[:]
         instance_index_ranking = []
-    
+
     # The maximum number of records to sample.
     ceiling = np.minimum(unlabeled.shape[0], n_instances) - len(instance_index_ranking)
 
@@ -156,11 +173,15 @@ def ranked_batch(classifier: Union[BaseLearner, BaseCommittee],
     mask = np.ones(unlabeled.shape[0], np.bool)
 
     for _ in range(ceiling):
-
         # Receive the instance and corresponding index from our unlabeled copy that scores highest.
-        instance_index, instance, mask = select_instance(X_training=labeled, X_pool=unlabeled,
-                                                         X_uncertainty=uncertainty_scores, mask=mask,
-                                                         metric=metric, n_jobs=n_jobs)
+        instance_index, instance, mask = select_instance(
+            X_training=labeled,
+            X_pool=unlabeled,
+            X_uncertainty=uncertainty_scores,
+            mask=mask,
+            metric=metric,
+            n_jobs=n_jobs,
+        )
 
         # Add our instance we've considered for labeling to our labeled set. Although we don't
         # know it's label, we want further iterations to consider the newly-added instance so
@@ -174,13 +195,14 @@ def ranked_batch(classifier: Union[BaseLearner, BaseCommittee],
     return np.array(instance_index_ranking)
 
 
-def uncertainty_batch_sampling(classifier: Union[BaseLearner, BaseCommittee],
-                               X: Union[np.ndarray, sp.csr_matrix],
-                               n_instances: int = 20,
-                               metric: Union[str, Callable] = 'euclidean',
-                               n_jobs: Optional[int] = None,
-                               **uncertainty_measure_kwargs
-                               ) -> Tuple[np.ndarray, Union[np.ndarray, sp.csr_matrix]]:
+def uncertainty_batch_sampling(
+    classifier: Union[BaseLearner, BaseCommittee],
+    X: Union[np.ndarray, sp.csr_matrix],
+    n_instances: int = 20,
+    metric: Union[str, Callable] = "euclidean",
+    n_jobs: Optional[int] = None,
+    **uncertainty_measure_kwargs
+) -> Tuple[np.ndarray, Union[np.ndarray, sp.csr_matrix]]:
     """
     Batch sampling query strategy. Selects the least sure instances for labelling.
 
@@ -206,6 +228,12 @@ def uncertainty_batch_sampling(classifier: Union[BaseLearner, BaseCommittee],
         Indices of the instances from `X` chosen to be labelled; records from `X` chosen to be labelled.
     """
     uncertainty = classifier_uncertainty(classifier, X, **uncertainty_measure_kwargs)
-    query_indices = ranked_batch(classifier, unlabeled=X, uncertainty_scores=uncertainty,
-                                 n_instances=n_instances, metric=metric, n_jobs=n_jobs)
+    query_indices = ranked_batch(
+        classifier,
+        unlabeled=X,
+        uncertainty_scores=uncertainty,
+        n_instances=n_instances,
+        metric=metric,
+        n_jobs=n_jobs,
+    )
     return query_indices, X[query_indices]

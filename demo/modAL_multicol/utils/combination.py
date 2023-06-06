@@ -6,7 +6,10 @@ from sklearn.base import BaseEstimator
 # from modAL.utils.data import modALinput
 from modAL_multicol.utils.data import modALinput
 
-def make_linear_combination(*functions: Callable, weights: Optional[Sequence] = None) -> Callable:
+
+def make_linear_combination(
+    *functions: Callable, weights: Optional[Sequence] = None
+) -> Callable:
     """
     Takes the given functions and makes a function which returns the linear combination of the output of original
     functions. It works well with functions returning numpy arrays of the same shape.
@@ -26,16 +29,21 @@ def make_linear_combination(*functions: Callable, weights: Optional[Sequence] = 
     if weights is None:
         weights = np.ones(shape=(len(functions)))
     else:
-        assert len(functions) == len(weights), 'the length of weights must be the ' \
-                                               'same as the number of given functions'
+        assert len(functions) == len(weights), (
+            "the length of weights must be the " "same as the number of given functions"
+        )
 
     def linear_combination(*args, **kwargs):
-        return sum((weights[i]*functions[i](*args, **kwargs) for i in range(len(weights))))
+        return sum(
+            (weights[i] * functions[i](*args, **kwargs) for i in range(len(weights)))
+        )
 
     return linear_combination
 
 
-def make_product(*functions: Callable, exponents: Optional[Sequence] = None) -> Callable:
+def make_product(
+    *functions: Callable, exponents: Optional[Sequence] = None
+) -> Callable:
     """
     Takes the given functions and makes a function which returns the product of the output of original functions. It
     works well with functions returning numpy arrays of the same shape.
@@ -52,12 +60,19 @@ def make_product(*functions: Callable, exponents: Optional[Sequence] = None) -> 
     if exponents is None:
         exponents = np.ones(shape=(len(functions)))
     else:
-        assert len(functions) == len(exponents), 'the length of exponents must be the ' \
-                                                 'same as the number of given functions'
+        assert len(functions) == len(exponents), (
+            "the length of exponents must be the "
+            "same as the number of given functions"
+        )
 
     def product_function(*args, **kwargs):
-        return np.prod([functions[i](*args, **kwargs)**exponents[i]
-                       for i in range(len(exponents))], axis=0)
+        return np.prod(
+            [
+                functions[i](*args, **kwargs) ** exponents[i]
+                for i in range(len(exponents))
+            ],
+            axis=0,
+        )
 
     return product_function
 
@@ -76,6 +91,7 @@ def make_query_strategy(utility_measure: Callable, selector: Callable) -> Callab
     Returns:
         A function which returns queried instances given a classifier and an unlabelled pool.
     """
+
     def query_strategy(classifier: BaseEstimator, X: modALinput) -> Tuple:
         utility = utility_measure(classifier, X)
         query_idx = selector(utility)

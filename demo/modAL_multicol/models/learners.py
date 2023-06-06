@@ -1,4 +1,5 @@
 import numpy as np
+
 np.set_printoptions(precision=3)
 
 import os
@@ -73,18 +74,32 @@ class ActiveLearner(BaseLearner):
         ... )
     """
 
-    def __init__(self,
-                 estimator: BaseEstimator,
-                 query_strategy: Callable = uncertainty_sampling,
-                 X_training: Optional[modALinput] = None,
-                 y_training: Optional[modALinput] = None,
-                 bootstrap_init: bool = False,
-                 **fit_kwargs
-                 ) -> None:
-        super().__init__(estimator, query_strategy,
-                         X_training, y_training, bootstrap_init, **fit_kwargs)
+    def __init__(
+        self,
+        estimator: BaseEstimator,
+        query_strategy: Callable = uncertainty_sampling,
+        X_training: Optional[modALinput] = None,
+        y_training: Optional[modALinput] = None,
+        bootstrap_init: bool = False,
+        **fit_kwargs
+    ) -> None:
+        super().__init__(
+            estimator,
+            query_strategy,
+            X_training,
+            y_training,
+            bootstrap_init,
+            **fit_kwargs
+        )
 
-    def teach(self, X: modALinput, y: modALinput, bootstrap: bool = False, only_new: bool = False, **fit_kwargs) -> None:
+    def teach(
+        self,
+        X: modALinput,
+        y: modALinput,
+        bootstrap: bool = False,
+        only_new: bool = False,
+        **fit_kwargs
+    ) -> None:
         """
         Adds X and y to the known training data and retrains the predictor with the augmented dataset.
 
@@ -99,7 +114,7 @@ class ActiveLearner(BaseLearner):
             **fit_kwargs: Keyword arguments to be passed to the fit method of the predictor.
         """
         self._add_training_data(X, y)
-        
+
         if not only_new:
             self._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
         else:
@@ -154,16 +169,22 @@ class Committee(BaseCommittee):
         ...     y=iris['target'][query_idx].reshape(1, )
         ... )
     """
-    def __init__(self, learner_list: List[ActiveLearner], given_classes = None, query_strategy: Callable = vote_entropy_sampling) -> None:
+
+    def __init__(
+        self,
+        learner_list: List[ActiveLearner],
+        given_classes=None,
+        query_strategy: Callable = vote_entropy_sampling,
+    ) -> None:
         super().__init__(learner_list, query_strategy)
-        self._set_classes(given_classes) 
+        self._set_classes(given_classes)
         self.queried_X = {}
 
     def save_model(self, *filenames):
         """
         #edited
         export estimators in the committee to files h5 in the given directory
-        """        
+        """
         try:
             # print(filenames) # range of argument values ~ keys/filenames
             for l_idx in range(len(self.learner_list)):
@@ -171,8 +192,7 @@ class Committee(BaseCommittee):
         except AttributeError as e:
             print("We got an error, the estimator did not save: ", e)
 
-
-    def _set_classes(self, given_classes = None):
+    def _set_classes(self, given_classes=None):
         """
         #edited
         Checks the known class labels by each learner,
@@ -180,16 +200,18 @@ class Committee(BaseCommittee):
         classes to the complete label list.
         """
         if isinstance(self.learner_list[0].estimator, Sequential):
-            self.classes_ = np.array([0,1,2,3,4])
+            self.classes_ = np.array([0, 1, 2, 3, 4])
 
         else:
-            if given_classes is None: # class definition not given            
-                # assemble the list of known classes from each learner           
+            if given_classes is None:  # class definition not given
+                # assemble the list of known classes from each learner
                 try:
                     # if estimators are fitted
-                    known_classes = tuple(learner.estimator.classes_ for learner in self.learner_list)
+                    known_classes = tuple(
+                        learner.estimator.classes_ for learner in self.learner_list
+                    )
                     conca = np.concatenate(known_classes)
-                    while conca[0].ndim > 0:    # handle when given has more dimension
+                    while conca[0].ndim > 0:  # handle when given has more dimension
                         conca = np.concatenate(conca)
                 except AttributeError:
                     # handle unfitted estimators
@@ -202,7 +224,7 @@ class Committee(BaseCommittee):
                 finally:
                     self.classes_ = np.unique(conca, axis=0)
             else:
-                self.classes_ = given_classes        
+                self.classes_ = given_classes
         self.n_classes_ = len(self.classes_)
 
     def _add_training_data(self, X: modALinput, y: modALinput):
@@ -227,28 +249,32 @@ class Committee(BaseCommittee):
         proba = self.predict_proba(X, **predict_proba_kwargs)
         # print(proba)
 
-        if proba.shape[1] > 4: # multi output flatten, proba.shape[1] == 20
-            preds = np.split(proba[0], int(proba.shape[1]/self.n_classes_))
-            
+        if proba.shape[1] > 4:  # multi output flatten, proba.shape[1] == 20
+            preds = np.split(proba[0], int(proba.shape[1] / self.n_classes_))
+
             # print("preds@predict in learners.py", preds)
 
             fin_preds = []
             for c in range(len(preds)):
                 col = preds[c]
-                rate_idx = np.argwhere(col > 0.5) 
-                # 0.5 defined by the paper Cheng, J., Wang, Z., & Pollastri, G. (2008, June). 
-                # A neural network approach to ordinal regression. 
+                rate_idx = np.argwhere(col > 0.5)
+                # 0.5 defined by the paper Cheng, J., Wang, Z., & Pollastri, G. (2008, June).
+                # A neural network approach to ordinal regression.
                 # In 2008 IEEE International Joint Conference on Neural Networks (IEEE World Congress on Computational Intelligence) (pp. 1279-1284). IEEE.
                 if rate_idx.size == 0:
-                    fin_preds.append(np.argmax(col)) # regular implementation for data format with one-hot coding and so
+                    fin_preds.append(
+                        np.argmax(col)
+                    )  # regular implementation for data format with one-hot coding and so
                 else:
-                    fin_preds.append(rate_idx[-1][0]) # the paper implmenetation
+                    fin_preds.append(rate_idx[-1][0])  # the paper implmenetation
             # finding the sample-wise max probability
             # print("preds after argmax@predict in learners.py", fin_preds)
             return fin_preds
         else:
-            max_proba_idx = np.argmax(proba, axis=1) # finding the sample-wise max probability
-            return self.classes_[max_proba_idx] # translating label indices to labels
+            max_proba_idx = np.argmax(
+                proba, axis=1
+            )  # finding the sample-wise max probability
+            return self.classes_[max_proba_idx]  # translating label indices to labels
 
     def predict_proba(self, X: modALinput, **predict_proba_kwargs) -> Any:
         """
@@ -264,7 +290,9 @@ class Committee(BaseCommittee):
         v_proba = self.vote_proba(X, **predict_proba_kwargs)
         return np.mean(v_proba, axis=1)
 
-    def score(self, X: modALinput, y: modALinput, sample_weight: List[float] = None) -> Any:
+    def score(
+        self, X: modALinput, y: modALinput, sample_weight: List[float] = None
+    ) -> Any:
         """
         Returns the mean accuracy on the given test data and labels.
 
@@ -297,23 +325,35 @@ class Committee(BaseCommittee):
         np.set_printoptions(suppress=True)
 
         n_learners = len(self.learner_list)
-        prediction = np.zeros(shape=(X.shape[0], n_learners*20)) # in the shape of multiple columns, put next to each other
-        p_idx = 0 # initialization for padding
+        prediction = np.zeros(
+            shape=(X.shape[0], n_learners * 20)
+        )  # in the shape of multiple columns, put next to each other
+        p_idx = 0  # initialization for padding
         for learner_idx, learner in enumerate(self.learner_list):
             tmp_prediction = learner.predict(X, **predict_kwargs)
-            splited_y = np.hsplit(tmp_prediction, 4)  # because we only have four quality factors atm...
-            rating_vals = np.array(list(map(lambda x: np.apply_along_axis(self.get_rating, 1, x), splited_y)))
-            y_classes = rating_vals.transpose() # now let's stack up the splited list, indices of rating vote
-            prediction = y_classes if learner_idx == 0 else np.hstack((prediction, y_classes))
+            splited_y = np.hsplit(
+                tmp_prediction, 4
+            )  # because we only have four quality factors atm...
+            rating_vals = np.array(
+                list(
+                    map(lambda x: np.apply_along_axis(self.get_rating, 1, x), splited_y)
+                )
+            )
+            y_classes = (
+                rating_vals.transpose()
+            )  # now let's stack up the splited list, indices of rating vote
+            prediction = (
+                y_classes if learner_idx == 0 else np.hstack((prediction, y_classes))
+            )
         # print(prediction)
         return prediction
 
     def get_rating(self, x):
         """
-            given [1, 0.8, 0.6, 0, 0] returns 2
+        given [1, 0.8, 0.6, 0, 0] returns 2
         """
         idx = 0
-        for i in range(len(x)):            
+        for i in range(len(x)):
             # if x[i] == 1:
             if x[i] > 0.5:
                 idx = i
@@ -339,4 +379,3 @@ class Committee(BaseCommittee):
         # np.set_printoptions(suppress=True)
         # print(proba)
         return proba
-

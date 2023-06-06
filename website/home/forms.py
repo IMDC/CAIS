@@ -4,6 +4,7 @@ from .models import Response, Question, Category, AnswerRadio, AnswerText
 import uuid
 from django.http import HttpResponseRedirect
 
+
 # forms.ModelForm, form is being used directly add or edit a Django model, can use ModelForm to avoid duplicating
 # model description
 class ResponseForm(forms.ModelForm):

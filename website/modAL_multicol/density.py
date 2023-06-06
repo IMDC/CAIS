@@ -20,8 +20,9 @@ def similarize_distance(distance_measure: Callable) -> Callable:
     Returns:
         The information_density measure obtained from the given distance measure.
     """
+
     def sim(*args, **kwargs):
-        return 1/(1 + distance_measure(*args, **kwargs))
+        return 1 / (1 + distance_measure(*args, **kwargs))
 
     return sim
 
@@ -30,7 +31,9 @@ cosine_similarity = similarize_distance(cosine)
 euclidean_similarity = similarize_distance(euclidean)
 
 
-def information_density(X: modALinput, metric: Union[str, Callable] = 'euclidean') -> np.ndarray:
+def information_density(
+    X: modALinput, metric: Union[str, Callable] = "euclidean"
+) -> np.ndarray:
     """
     Calculates the information density metric of the given data using the given metric.
 
@@ -51,6 +54,6 @@ def information_density(X: modALinput, metric: Union[str, Callable] = 'euclidean
     #
     # return inf_density/X.shape[0]
 
-    similarity_mtx = 1/(1+pairwise_distances(X, X, metric=metric))
+    similarity_mtx = 1 / (1 + pairwise_distances(X, X, metric=metric))
 
     return similarity_mtx.mean(axis=1)

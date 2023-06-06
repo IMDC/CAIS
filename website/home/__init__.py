@@ -1,1 +1,1 @@
-default_app_config = 'home.apps.ActiveLearnerConfig'
+default_app_config = "home.apps.ActiveLearnerConfig"

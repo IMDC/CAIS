@@ -28,4 +28,4 @@ def data_vstack(blocks: Container) -> modALinput:
         try:
             return np.concatenate(blocks)
         except:
-            raise TypeError('%s datatype is not supported' % type(blocks[0]))
+            raise TypeError("%s datatype is not supported" % type(blocks[0]))

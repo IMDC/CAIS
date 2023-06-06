@@ -67,6 +67,7 @@ class Response(models.Model):
     a response object is just a collection of questions and answers with
     a unique interview uuid
     """
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     interview_uuid = models.CharField("Unique Identifier", max_length=36)

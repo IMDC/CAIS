@@ -25,6 +25,7 @@ from .models import Blobby, Response, Question, AnswerRadio
 
 DATASIZE = 1000  # 20000 # 100000
 
+
 class ActiveLearningClient:
     def keras_model(self):
         print("KERAS MODEL GENERATION")
@@ -43,10 +44,14 @@ class ActiveLearningClient:
         commitee_members = 2
         learners = list()
 
-        if not Blobby.objects.exists(): # below should only run for the very first time            
+        if not Blobby.objects.exists():  # below should only run for the very first time
             print("FIRST PARTICIPANT!")
             try:
-                df = pd.read_csv(str(settings.STATICFILES_DIRS[0]) + "/um_20000.csv", header=None, sep=",")
+                df = pd.read_csv(
+                    str(settings.STATICFILES_DIRS[0]) + "/um_20000.csv",
+                    header=None,
+                    sep=",",
+                )
                 tmp_dataset = np.array(df)
             except Exception as e:
                 print(e)
@@ -79,7 +84,10 @@ class ActiveLearningClient:
             orig_urls, mod_urls = [
                 settings.BASE_DIR + "/originalfirst.h5",
                 settings.BASE_DIR + "/originalsecond.h5",
-            ], [settings.BASE_DIR + "/modifiedfirst.h5", settings.BASE_DIR + "/modifiedsecond.h5"]
+            ], [
+                settings.BASE_DIR + "/modifiedfirst.h5",
+                settings.BASE_DIR + "/modifiedsecond.h5",
+            ]
 
             print(orig_urls, mod_urls)
 
@@ -107,7 +115,9 @@ class ActiveLearningClient:
             "I am Hard of Hearing",
         )
 
-        q = Question.objects.get(text="What statement best describes your relationship with the Deaf and/or Hard of Hearing Communities?")
+        q = Question.objects.get(
+            text="What statement best describes your relationship with the Deaf and/or Hard of Hearing Communities?"
+        )
         doh = AnswerRadio.objects.filter(question=q).last().body
         self.csv_url = str(settings.STATICFILES_DIRS[0]) + "/um_20000.csv"
 
@@ -115,7 +125,7 @@ class ActiveLearningClient:
             self.csv_url = str(settings.STATICFILES_DIRS[0]) + f"/deaf_{DATASIZE}.csv"
         elif doh == hoh:
             self.csv_url = str(settings.STATICFILES_DIRS[0]) + f"/hoh_{DATASIZE}.csv"
-        
+
         print("HEARING GROUP:{}, loading:{}".format(doh, self.csv_url))
         try:
             df = pd.read_csv(self.csv_url, header=None, sep=",")

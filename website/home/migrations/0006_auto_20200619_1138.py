@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('home', '0005_delete_original'),
+        ("home", "0005_delete_original"),
     ]
 
     operations = [
         migrations.AlterOrderWithRespectTo(
-            name='videogenerator',
-            order_with_respect_to='video_name',
+            name="videogenerator",
+            order_with_respect_to="video_name",
         ),
     ]

@@ -12,14 +12,15 @@ from sklearn.base import BaseEstimator
 from sklearn.utils import check_X_y
 
 # from modAL.utils.data import data_vstack, modALinput
-import tensorflow as tf    
+import tensorflow as tf
+
 graph = tf.compat.v1.get_default_graph()
 from modAL_multicol.utils.data import data_vstack, modALinput
 
 if sys.version_info >= (3, 4):
     ABC = abc.ABC
 else:
-    ABC = abc.ABCMeta('ABC', (), {})
+    ABC = abc.ABCMeta("ABC", (), {})
 
 
 class BaseLearner(ABC, BaseEstimator):
@@ -45,16 +46,18 @@ class BaseLearner(ABC, BaseEstimator):
             which the model has been trained on.
         y_training: The labels corresponding to X_training.
     """
-    def __init__(self,
-                 estimator: BaseEstimator,
-                 query_strategy: Callable,
-                 X_training: Optional[modALinput] = None,
-                 y_training: Optional[modALinput] = None,
-                 bootstrap_init: bool = False,
-                 force_all_finite: bool = True,
-                 **fit_kwargs
-                 ) -> None:
-        assert callable(query_strategy), 'query_strategy must be callable'
+
+    def __init__(
+        self,
+        estimator: BaseEstimator,
+        query_strategy: Callable,
+        X_training: Optional[modALinput] = None,
+        y_training: Optional[modALinput] = None,
+        bootstrap_init: bool = False,
+        force_all_finite: bool = True,
+        **fit_kwargs
+    ) -> None:
+        assert callable(query_strategy), "query_strategy must be callable"
 
         self.estimator = estimator
         self.query_strategy = query_strategy
@@ -64,7 +67,7 @@ class BaseLearner(ABC, BaseEstimator):
         if X_training is not None:
             self._fit_to_known(bootstrap=bootstrap_init, **fit_kwargs)
 
-        assert isinstance(force_all_finite, bool), 'force_all_finite must be a bool'
+        assert isinstance(force_all_finite, bool), "force_all_finite must be a bool"
         self.force_all_finite = force_all_finite
 
     def _add_training_data(self, X: modALinput, y: modALinput) -> None:
@@ -79,8 +82,16 @@ class BaseLearner(ABC, BaseEstimator):
             If the classifier has been fitted, the features in X have to agree with the training samples which the
             classifier has seen.
         """
-        check_X_y(X, y, accept_sparse=True, ensure_2d=False, allow_nd=True, multi_output=True, dtype=None,
-                  force_all_finite=self.force_all_finite)
+        check_X_y(
+            X,
+            y,
+            accept_sparse=True,
+            ensure_2d=False,
+            allow_nd=True,
+            multi_output=True,
+            dtype=None,
+            force_all_finite=self.force_all_finite,
+        )
 
         if self.X_training is None:
             self.X_training = X
@@ -90,10 +101,12 @@ class BaseLearner(ABC, BaseEstimator):
                 self.X_training = data_vstack((self.X_training, X))
                 self.y_training = data_vstack((self.y_training, y))
             except ValueError:
-                raise ValueError('the dimensions of the new training data and label must'
-                                 'agree with the training data and labels provided so far')
+                raise ValueError(
+                    "the dimensions of the new training data and label must"
+                    "agree with the training data and labels provided so far"
+                )
 
-    def _fit_to_known(self, bootstrap: bool = False, **fit_kwargs) -> 'BaseLearner':
+    def _fit_to_known(self, bootstrap: bool = False, **fit_kwargs) -> "BaseLearner":
         """
         Fits self.estimator to the training data and labels provided to it so far.
 
@@ -110,12 +123,20 @@ class BaseLearner(ABC, BaseEstimator):
             # print(self.y_training[-1])
         else:
             n_instances = self.X_training.shape[0]
-            bootstrap_idx = np.random.choice(range(n_instances), n_instances, replace=True)
-            self.estimator.fit(self.X_training[bootstrap_idx], self.y_training[bootstrap_idx], **fit_kwargs)
+            bootstrap_idx = np.random.choice(
+                range(n_instances), n_instances, replace=True
+            )
+            self.estimator.fit(
+                self.X_training[bootstrap_idx],
+                self.y_training[bootstrap_idx],
+                **fit_kwargs
+            )
 
         return self
 
-    def _fit_on_new(self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs) -> 'BaseLearner':
+    def _fit_on_new(
+        self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs
+    ) -> "BaseLearner":
         """
         Fits self.estimator to the given data and labels.
 
@@ -128,18 +149,30 @@ class BaseLearner(ABC, BaseEstimator):
         Returns:
             self
         """
-        check_X_y(X, y, accept_sparse=True, ensure_2d=False, allow_nd=True, multi_output=True, dtype=None,
-                  force_all_finite=self.force_all_finite)
+        check_X_y(
+            X,
+            y,
+            accept_sparse=True,
+            ensure_2d=False,
+            allow_nd=True,
+            multi_output=True,
+            dtype=None,
+            force_all_finite=self.force_all_finite,
+        )
 
         if not bootstrap:
             self.estimator.fit(X, y, **fit_kwargs)
         else:
-            bootstrap_idx = np.random.choice(range(X.shape[0]), X.shape[0], replace=True)
+            bootstrap_idx = np.random.choice(
+                range(X.shape[0]), X.shape[0], replace=True
+            )
             self.estimator.fit(X[bootstrap_idx], y[bootstrap_idx])
 
         return self
 
-    def fit(self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs) -> 'BaseLearner':
+    def fit(
+        self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs
+    ) -> "BaseLearner":
         """
         Interface for the fit method of the predictor. Fits the predictor to the supplied data, then stores it
         internally for the active learning loop.
@@ -158,8 +191,16 @@ class BaseLearner(ABC, BaseEstimator):
         Returns:
             self
         """
-        check_X_y(X, y, accept_sparse=True, ensure_2d=False, allow_nd=True, multi_output=True, dtype=None,
-                  force_all_finite=self.force_all_finite)
+        check_X_y(
+            X,
+            y,
+            accept_sparse=True,
+            ensure_2d=False,
+            allow_nd=True,
+            multi_output=True,
+            dtype=None,
+            force_all_finite=self.force_all_finite,
+        )
         self.X_training, self.y_training = X, y
         return self._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
 
@@ -178,7 +219,6 @@ class BaseLearner(ABC, BaseEstimator):
         with graph.as_default():
             output = self.estimator.predict(X, **predict_kwargs)
             return output
-
 
     def predict_proba(self, X: modALinput, **predict_proba_kwargs) -> Any:
         """
@@ -238,8 +278,11 @@ class BaseCommittee(ABC, BaseEstimator):
         learner_list: List of ActiveLearner objects to form committee.
         query_strategy: Function to query labels.
     """
-    def __init__(self, learner_list: List[BaseLearner], query_strategy: Callable) -> None:
-        assert type(learner_list) == list, 'learners must be supplied in a list'
+
+    def __init__(
+        self, learner_list: List[BaseLearner], query_strategy: Callable
+    ) -> None:
+        assert type(learner_list) == list, "learners must be supplied in a list"
         self.learner_list = learner_list
         self.query_strategy = query_strategy
 
@@ -277,7 +320,9 @@ class BaseCommittee(ABC, BaseEstimator):
         for learner in self.learner_list:
             learner._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
 
-    def _fit_on_new(self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs) -> None:
+    def _fit_on_new(
+        self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs
+    ) -> None:
         """
         Fits all learners to the given data and labels.
 
@@ -290,7 +335,7 @@ class BaseCommittee(ABC, BaseEstimator):
         for learner in self.learner_list:
             learner._fit_on_new(X, y, bootstrap=bootstrap, **fit_kwargs)
 
-    def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> 'BaseCommittee':
+    def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> "BaseCommittee":
         """
         Fits every learner to a subset sampled with replacement from X. Calling this method makes the learner forget the
         data it has seen up until this point and replaces it with X! If you would like to perform bootstrapping on each
@@ -323,13 +368,13 @@ class BaseCommittee(ABC, BaseEstimator):
             be labelled upon query synthesis.
         """
         X = query_args[0]
-        
+
         print(bool(self.queried_X))
         print(X)
         print(self)
         print(self.avg_score)
 
-        if bool(self.queried_X): # if queried_X is not empty
+        if bool(self.queried_X):  # if queried_X is not empty
             # we check if we can take out what was asked already
             kl = list(self.queried_X.keys())
             new_X = np.delete(X, kl, axis=0)
@@ -340,7 +385,7 @@ class BaseCommittee(ABC, BaseEstimator):
 
         print(query_result[0][0], query_result[1][0])
         self.queried_X[query_result[0][0]] = query_result[1][0]
-    
+
         return query_result
 
     def rebag(self, **fit_kwargs) -> None:
@@ -356,7 +401,14 @@ class BaseCommittee(ABC, BaseEstimator):
         """
         self._fit_to_known(bootstrap=True, **fit_kwargs)
 
-    def teach(self, X: modALinput, y: modALinput, bootstrap: bool = False, only_new: bool = False, **fit_kwargs) -> None:
+    def teach(
+        self,
+        X: modALinput,
+        y: modALinput,
+        bootstrap: bool = False,
+        only_new: bool = False,
+        **fit_kwargs
+    ) -> None:
         """
         Adds X and y to the known training data for each learner and retrains learners with the augmented dataset.
 
@@ -368,7 +420,7 @@ class BaseCommittee(ABC, BaseEstimator):
             **fit_kwargs: Keyword arguments to be passed to the fit method of the predictor.
         """
         self._add_training_data(X, y)
-        
+
         # print("learner.teach():", X, y, "only_new? ", only_new)
         if not only_new:
             self._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
