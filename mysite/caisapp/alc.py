@@ -17,9 +17,9 @@ from keras.models import Sequential
 from keras.losses import binary_crossentropy
 from keras.metrics import categorical_accuracy
 
-import modAL
-from modAL.models import ActiveLearner, Committee
-from modAL.multilabel import avg_score
+import modAL_multicol
+from modAL_multicol.models import ActiveLearner, Committee
+from modAL_multicol.multilabel import avg_score
 
 from .models import Blobby, Response, Question, AnswerRadio
 
