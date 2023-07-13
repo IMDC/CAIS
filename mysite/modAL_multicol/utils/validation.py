@@ -18,16 +18,20 @@ def check_class_labels(*args: BaseEstimator) -> bool:
     try:
         classes_ = [estimator.classes_ for estimator in args]
     except AttributeError:
-        raise NotFittedError('Not all estimators are fitted. Fit all estimators before using this method.')
+        raise NotFittedError(
+            "Not all estimators are fitted. Fit all estimators before using this method."
+        )
 
     for classifier_idx in range(len(args) - 1):
-        if not np.array_equal(classes_[classifier_idx], classes_[classifier_idx+1]):
+        if not np.array_equal(classes_[classifier_idx], classes_[classifier_idx + 1]):
             return False
 
     return True
 
 
-def check_class_proba(proba: np.ndarray, known_labels: Sequence, all_labels: Sequence) -> np.ndarray:
+def check_class_proba(
+    proba: np.ndarray, known_labels: Sequence, all_labels: Sequence
+) -> np.ndarray:
     """
     Checks the class probabilities and reshapes it if not all labels are present in the classifier.
 
@@ -42,7 +46,7 @@ def check_class_proba(proba: np.ndarray, known_labels: Sequence, all_labels: Seq
     """
     # TODO: rewrite this function using numpy.insert
 
-    label_idx_map = -np.ones(len(all_labels), dtype='int')
+    label_idx_map = -np.ones(len(all_labels), dtype="int")
 
     for known_label_idx, known_label in enumerate(known_labels):
         # finds the position of label in all_labels

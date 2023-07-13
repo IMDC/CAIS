@@ -13,16 +13,16 @@ from modAL.utils.selection import multi_argmax
 
 
 def PI(mean, std, max_val, tradeoff):
-    return ndtr((mean - max_val - tradeoff)/std)
+    return ndtr((mean - max_val - tradeoff) / std)
 
 
 def EI(mean, std, max_val, tradeoff):
     z = (mean - max_val - tradeoff) / std
-    return (mean - max_val - tradeoff)*ndtr(z) + std*norm.pdf(z)
+    return (mean - max_val - tradeoff) * ndtr(z) + std * norm.pdf(z)
 
 
 def UCB(mean, std, beta):
-    return mean + beta*std
+    return mean + beta * std
 
 
 """
@@ -32,7 +32,9 @@ Acquisition functions
 """
 
 
-def optimizer_PI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0) -> np.ndarray:
+def optimizer_PI(
+    optimizer: BaseLearner, X: modALinput, tradeoff: float = 0
+) -> np.ndarray:
     """
     Probability of improvement acquisition function for Bayesian optimization.
 
@@ -46,14 +48,20 @@ def optimizer_PI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0) -> 
     """
     try:
         mean, std = optimizer.predict(X, return_std=True)
-        mean, std = mean.reshape(-1, ), std.reshape(-1, )
+        mean, std = mean.reshape(
+            -1,
+        ), std.reshape(
+            -1,
+        )
     except NotFittedError:
         mean, std = np.zeros(shape=(X.shape[0], 1)), np.ones(shape=(X.shape[0], 1))
 
     return PI(mean, std, optimizer.y_max, tradeoff)
 
 
-def optimizer_EI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0) -> np.ndarray:
+def optimizer_EI(
+    optimizer: BaseLearner, X: modALinput, tradeoff: float = 0
+) -> np.ndarray:
     """
     Expected improvement acquisition function for Bayesian optimization.
 
@@ -67,7 +75,11 @@ def optimizer_EI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0) -> 
     """
     try:
         mean, std = optimizer.predict(X, return_std=True)
-        mean, std = mean.reshape(-1, ), std.reshape(-1, )
+        mean, std = mean.reshape(
+            -1,
+        ), std.reshape(
+            -1,
+        )
     except NotFittedError:
         mean, std = np.zeros(shape=(X.shape[0], 1)), np.ones(shape=(X.shape[0], 1))
 
@@ -88,7 +100,11 @@ def optimizer_UCB(optimizer: BaseLearner, X: modALinput, beta: float = 1) -> np.
     """
     try:
         mean, std = optimizer.predict(X, return_std=True)
-        mean, std = mean.reshape(-1, ), std.reshape(-1, )
+        mean, std = mean.reshape(
+            -1,
+        ), std.reshape(
+            -1,
+        )
     except NotFittedError:
         mean, std = np.zeros(shape=(X.shape[0], 1)), np.ones(shape=(X.shape[0], 1))
 
@@ -102,8 +118,9 @@ Query strategies using acquisition functions
 """
 
 
-def max_PI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0,
-           n_instances: int = 1) -> np.ndarray:
+def max_PI(
+    optimizer: BaseLearner, X: modALinput, tradeoff: float = 0, n_instances: int = 1
+) -> np.ndarray:
     """
     Maximum PI query strategy. Selects the instance with highest probability of improvement.
 
@@ -122,8 +139,9 @@ def max_PI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0,
     return multi_argmax(pi, n_instances=n_instances)
 
 
-def max_EI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0,
-           n_instances: int = 1) -> np.ndarray:
+def max_EI(
+    optimizer: BaseLearner, X: modALinput, tradeoff: float = 0, n_instances: int = 1
+) -> np.ndarray:
     """
     Maximum EI query strategy. Selects the instance with highest expected improvement.
 
@@ -134,7 +152,7 @@ def max_EI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0,
         n_instances: Number of samples to be queried.
 
     Returns:
-        The indices of the instances from X chosen to be labelled. 
+        The indices of the instances from X chosen to be labelled.
         The ei metric of the chosen instances.
 
     """
@@ -142,8 +160,9 @@ def max_EI(optimizer: BaseLearner, X: modALinput, tradeoff: float = 0,
     return multi_argmax(ei, n_instances=n_instances)
 
 
-def max_UCB(optimizer: BaseLearner, X: modALinput, beta: float = 1,
-            n_instances: int = 1) -> np.ndarray:
+def max_UCB(
+    optimizer: BaseLearner, X: modALinput, beta: float = 1, n_instances: int = 1
+) -> np.ndarray:
     """
     Maximum UCB query strategy. Selects the instance with highest upper confidence bound.
 
@@ -154,7 +173,7 @@ def max_UCB(optimizer: BaseLearner, X: modALinput, beta: float = 1,
         n_instances: Number of samples to be queried.
 
     Returns:
-        The indices of the instances from X chosen to be labelled. 
+        The indices of the instances from X chosen to be labelled.
         The ucb metric of the chosen instances.
 
     """

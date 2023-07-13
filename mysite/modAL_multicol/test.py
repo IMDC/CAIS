@@ -1,21 +1,5 @@
-
-
-
-
-
-
-
-
-
-
 from modAL_multimodal.models import Committee
 from modAL_multimodal.disagreement import vote_entropy_sampling
-
-
-
-
-
-
 
 
 # learner1 = ActiveLearner(

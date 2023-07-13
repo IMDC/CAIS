@@ -18,7 +18,7 @@ from sklearn.pipeline import Pipeline
 if sys.version_info >= (3, 4):
     ABC = abc.ABC
 else:
-    ABC = abc.ABCMeta('ABC', (), {})
+    ABC = abc.ABCMeta("ABC", (), {})
 
 
 class BaseLearner(ABC, BaseEstimator):
@@ -30,7 +30,7 @@ class BaseLearner(ABC, BaseEstimator):
         query_strategy: Function providing the query strategy for the active learning loop,
             for instance, modAL.uncertainty.uncertainty_sampling.
         force_all_finite: When True, forces all values of the data finite.
-            When False, accepts np.nan and np.inf values.        
+            When False, accepts np.nan and np.inf values.
         **fit_kwargs: keyword arguments.
 
     Attributes:
@@ -38,22 +38,24 @@ class BaseLearner(ABC, BaseEstimator):
         query_strategy: Function providing the query strategy for the active learning loop.
     """
 
-    def __init__(self,
-                 estimator: BaseEstimator,
-                 query_strategy: Callable,
-                 force_all_finite: bool = True,
-                 **fit_kwargs
-                 ) -> None:
-        assert callable(query_strategy), 'query_strategy must be callable'
+    def __init__(
+        self,
+        estimator: BaseEstimator,
+        query_strategy: Callable,
+        force_all_finite: bool = True,
+        **fit_kwargs
+    ) -> None:
+        assert callable(query_strategy), "query_strategy must be callable"
 
         self.estimator = estimator
         self.query_strategy = query_strategy
 
-        assert isinstance(force_all_finite,
-                          bool), 'force_all_finite must be a bool'
+        assert isinstance(force_all_finite, bool), "force_all_finite must be a bool"
         self.force_all_finite = force_all_finite
 
-    def _fit_on_new(self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs) -> 'BaseLearner':
+    def _fit_on_new(
+        self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs
+    ) -> "BaseLearner":
         """
         Fits self.estimator to the given data and labels.
 
@@ -71,7 +73,8 @@ class BaseLearner(ABC, BaseEstimator):
             self.estimator.fit(X, y, **fit_kwargs)
         else:
             bootstrap_idx = np.random.choice(
-                range(X.shape[0]), X.shape[0], replace=True)
+                range(X.shape[0]), X.shape[0], replace=True
+            )
             self.estimator.fit(X[bootstrap_idx], y[bootstrap_idx])
 
         return self
@@ -106,7 +109,9 @@ class BaseLearner(ABC, BaseEstimator):
         """
         return self.estimator.predict_proba(X, **predict_proba_kwargs)
 
-    def query(self, X_pool, *query_args, return_metrics: bool = False, **query_kwargs) -> Union[Tuple, modALinput]:
+    def query(
+        self, X_pool, *query_args, return_metrics: bool = False, **query_kwargs
+    ) -> Union[Tuple, modALinput]:
         """
         Finds the n_instances most informative point in the data provided by calling the query_strategy function.
 
@@ -127,17 +132,20 @@ class BaseLearner(ABC, BaseEstimator):
 
         try:
             query_result, query_metrics = self.query_strategy(
-                self, X_pool, *query_args, **query_kwargs)
+                self, X_pool, *query_args, **query_kwargs
+            )
 
         except:
             query_metrics = None
             query_result = self.query_strategy(
-                self, X_pool, *query_args, **query_kwargs)
+                self, X_pool, *query_args, **query_kwargs
+            )
 
         if return_metrics:
-            if query_metrics is None: 
+            if query_metrics is None:
                 warnings.warn(
-                "The selected query strategy doesn't support return_metrics")
+                    "The selected query strategy doesn't support return_metrics"
+                )
             return query_result, retrieve_rows(X_pool, query_result), query_metrics
         else:
             return query_result, retrieve_rows(X_pool, query_result)
@@ -168,8 +176,11 @@ class BaseCommittee(ABC, BaseEstimator):
         learner_list: List of ActiveLearner objects to form committee.
         query_strategy: Function to query labels.
     """
-    def __init__(self, learner_list: List[BaseLearner], query_strategy: Callable) -> None:
-        assert type(learner_list) == list, 'learners must be supplied in a list'
+
+    def __init__(
+        self, learner_list: List[BaseLearner], query_strategy: Callable
+    ) -> None:
+        assert type(learner_list) == list, "learners must be supplied in a list"
 
         self.learner_list = learner_list
         self.query_strategy = query_strategy
@@ -207,7 +218,9 @@ class BaseCommittee(ABC, BaseEstimator):
         for learner in self.learner_list:
             learner._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
 
-    def _fit_on_new(self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs) -> None:
+    def _fit_on_new(
+        self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs
+    ) -> None:
         """
         Fits all learners to the given data and labels.
         Args:
@@ -219,7 +232,7 @@ class BaseCommittee(ABC, BaseEstimator):
         for learner in self.learner_list:
             learner._fit_on_new(X, y, bootstrap=bootstrap, **fit_kwargs)
 
-    def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> 'BaseCommittee':
+    def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> "BaseCommittee":
         """
         Fits every learner to a subset sampled with replacement from X. Calling this method makes the learner forget the
         data it has seen up until this point and replaces it with X! If you would like to perform bootstrapping on each
@@ -235,7 +248,9 @@ class BaseCommittee(ABC, BaseEstimator):
 
         return self
 
-    def query(self, X_pool, return_metrics: bool = False, *query_args, **query_kwargs) -> Union[Tuple, modALinput]:
+    def query(
+        self, X_pool, return_metrics: bool = False, *query_args, **query_kwargs
+    ) -> Union[Tuple, modALinput]:
         """
         Finds the n_instances most informative point in the data provided by calling the query_strategy function.
 
@@ -253,20 +268,22 @@ class BaseCommittee(ABC, BaseEstimator):
             be labelled upon query synthesis.
             query_metrics: returns also the corresponding metrics, if return_metrics == True
         """
-
         try:
             query_result, query_metrics = self.query_strategy(
-                self, X_pool, *query_args, **query_kwargs)
+                self, X_pool, *query_args, **query_kwargs
+            )
 
         except:
             query_metrics = None
             query_result = self.query_strategy(
-                self, X_pool, *query_args, **query_kwargs)
+                self, X_pool, *query_args, **query_kwargs
+            )
 
         if return_metrics:
-            if query_metrics is None: 
+            if query_metrics is None:
                 warnings.warn(
-                "The selected query strategy doesn't support return_metrics")
+                    "The selected query strategy doesn't support return_metrics"
+                )
             return query_result, retrieve_rows(X_pool, query_result), query_metrics
         else:
             return query_result, retrieve_rows(X_pool, query_result)
@@ -282,7 +299,14 @@ class BaseCommittee(ABC, BaseEstimator):
         """
         self._fit_to_known(bootstrap=True, **fit_kwargs)
 
-    def teach(self, X: modALinput, y: modALinput, bootstrap: bool = False, only_new: bool = False, **fit_kwargs) -> None:
+    def teach(
+        self,
+        X: modALinput,
+        y: modALinput,
+        bootstrap: bool = False,
+        only_new: bool = False,
+        **fit_kwargs
+    ) -> None:
         """
         Adds X and y to the known training data for each learner and retrains learners with the augmented dataset.
         Args:
@@ -305,4 +329,3 @@ class BaseCommittee(ABC, BaseEstimator):
     @abc.abstractmethod
     def vote(self, X: modALinput) -> Any:  # TODO: clarify typing
         pass
-

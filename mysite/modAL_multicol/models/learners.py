@@ -1,5 +1,5 @@
 from typing import Any, Callable, List, Optional, Tuple
-
+from tensorflow.keras.models import Sequential
 import numpy as np
 from modAL_multicol.acquisition import max_EI
 from modAL_multicol.disagreement import max_std_sampling, vote_entropy_sampling
@@ -66,14 +66,15 @@ class ActiveLearner(BaseLearner):
         ... )
     """
 
-    def __init__(self,
-                 estimator: BaseEstimator,
-                 query_strategy: Callable = uncertainty_sampling,
-                 X_training: Optional[modALinput] = None,
-                 y_training: Optional[modALinput] = None,
-                 bootstrap_init: bool = False,
-                 **fit_kwargs
-                 ) -> None:
+    def __init__(
+        self,
+        estimator: BaseEstimator,
+        query_strategy: Callable = uncertainty_sampling,
+        X_training: Optional[modALinput] = None,
+        y_training: Optional[modALinput] = None,
+        bootstrap_init: bool = False,
+        **fit_kwargs
+    ) -> None:
         super().__init__(estimator, query_strategy, **fit_kwargs)
 
         self.X_training = X_training
@@ -94,8 +95,16 @@ class ActiveLearner(BaseLearner):
             If the classifier has been fitted, the features in X have to agree with the training samples which the
             classifier has seen.
         """
-        check_X_y(X, y, accept_sparse=True, ensure_2d=False, allow_nd=True, multi_output=True, dtype=None,
-                  force_all_finite=self.force_all_finite)
+        check_X_y(
+            X,
+            y,
+            accept_sparse=True,
+            ensure_2d=False,
+            allow_nd=True,
+            multi_output=True,
+            dtype=None,
+            force_all_finite=self.force_all_finite,
+        )
 
         if self.X_training is None:
             self.X_training = X
@@ -105,10 +114,12 @@ class ActiveLearner(BaseLearner):
                 self.X_training = data_vstack((self.X_training, X))
                 self.y_training = data_vstack((self.y_training, y))
             except ValueError:
-                raise ValueError('the dimensions of the new training data and label must'
-                                 'agree with the training data and labels provided so far')
+                raise ValueError(
+                    "the dimensions of the new training data and label must"
+                    "agree with the training data and labels provided so far"
+                )
 
-    def _fit_to_known(self, bootstrap: bool = False, **fit_kwargs) -> 'BaseLearner':
+    def _fit_to_known(self, bootstrap: bool = False, **fit_kwargs) -> "BaseLearner":
         """
         Fits self.estimator to the training data and labels provided to it so far.
 
@@ -124,13 +135,19 @@ class ActiveLearner(BaseLearner):
         else:
             n_instances = self.X_training.shape[0]
             bootstrap_idx = np.random.choice(
-                range(n_instances), n_instances, replace=True)
+                range(n_instances), n_instances, replace=True
+            )
             self.estimator.fit(
-                self.X_training[bootstrap_idx], self.y_training[bootstrap_idx], **fit_kwargs)
+                self.X_training[bootstrap_idx],
+                self.y_training[bootstrap_idx],
+                **fit_kwargs
+            )
 
         return self
 
-    def fit(self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs) -> 'BaseLearner':
+    def fit(
+        self, X: modALinput, y: modALinput, bootstrap: bool = False, **fit_kwargs
+    ) -> "BaseLearner":
         """
         Interface for the fit method of the predictor. Fits the predictor to the supplied data, then stores it
         internally for the active learning loop.
@@ -149,12 +166,27 @@ class ActiveLearner(BaseLearner):
         Returns:
             self
         """
-        check_X_y(X, y, accept_sparse=True, ensure_2d=False, allow_nd=True, multi_output=True, dtype=None,
-                  force_all_finite=self.force_all_finite)
+        check_X_y(
+            X,
+            y,
+            accept_sparse=True,
+            ensure_2d=False,
+            allow_nd=True,
+            multi_output=True,
+            dtype=None,
+            force_all_finite=self.force_all_finite,
+        )
         self.X_training, self.y_training = X, y
         return self._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
 
-    def teach(self, X: modALinput, y: modALinput, bootstrap: bool = False, only_new: bool = False, **fit_kwargs) -> None:
+    def teach(
+        self,
+        X: modALinput,
+        y: modALinput,
+        bootstrap: bool = False,
+        only_new: bool = False,
+        **fit_kwargs
+    ) -> None:
         """
         Adds X and y to the known training data and retrains the predictor with the augmented dataset.
 
@@ -172,8 +204,16 @@ class ActiveLearner(BaseLearner):
             self._add_training_data(X, y)
             self._fit_to_known(bootstrap=bootstrap, **fit_kwargs)
         else:
-            check_X_y(X, y, accept_sparse=True, ensure_2d=False, allow_nd=True, multi_output=True, dtype=None,
-                      force_all_finite=self.force_all_finite)
+            check_X_y(
+                X,
+                y,
+                accept_sparse=True,
+                ensure_2d=False,
+                allow_nd=True,
+                multi_output=True,
+                dtype=None,
+                force_all_finite=self.force_all_finite,
+            )
             self._fit_on_new(X, y, bootstrap=bootstrap, **fit_kwargs)
 
 
@@ -227,35 +267,65 @@ class Committee(BaseCommittee):
         ...     y=iris['target'][query_idx].reshape(1, )
         ... )
     """
-    def __init__(self, learner_list: List[ActiveLearner], query_strategy: Callable = vote_entropy_sampling) -> None:
-        super().__init__(learner_list, query_strategy)
-        self._set_classes()
 
-    def _set_classes(self):
+    def __init__(
+        self,
+        learner_list: List[ActiveLearner],
+        given_classes=None,
+        query_strategy: Callable = vote_entropy_sampling,
+    ) -> None:
+        super().__init__(learner_list, query_strategy)
+        self._set_classes(given_classes)
+
+    def save_model(self, *filenames):
+        """
+        export estimators in the committee to files h5 in the given directory
+        """
+        try:
+            # print(filenames) # range of argument values ~ keys/filenames
+            for l_idx in range(len(self.learner_list)):
+                self.learner_list[l_idx].estimator.save(filenames[l_idx])
+        except AttributeError as e:
+            print("We got an error, the estimator did not save: ", e)
+
+    def _set_classes(self, given_classes=None):
         """
         Checks the known class labels by each learner, merges the labels and returns a mapping which maps the learner's
         classes to the complete label list.
         """
-        # assemble the list of known classes from each learner
-        try:
-            # if estimators are fitted
-            known_classes = tuple(learner.estimator.classes_ for learner in self.learner_list)
-        except AttributeError:
-            # handle unfitted estimators
-            self.classes_ = None
-            self.n_classes_ = 0
-            return
-
-        self.classes_ = np.unique(
-            np.concatenate(known_classes, axis=0),
-            axis=0
-        )
+        # if isinstance(self.learner_list[0].estimator, Sequential):
+        #     self.classes_ = np.array([0, 1, 2, 3, 4])
+        # else:
+        if given_classes is None:  # class definition not given
+            # assemble the list of known classes from each learner
+            try:
+                # if estimators are fitted
+                known_classes = tuple(
+                    learner.estimator.classes_ for learner in self.learner_list
+                )
+                conca = np.concatenate(known_classes)
+                while conca[0].ndim > 0:  # handle when given has more dimension
+                    conca = np.concatenate(conca)
+            except AttributeError:
+                # handle unfitted estimators
+                self.classes_ = None
+                self.n_classes_ = 0
+                return
+            except ValueError:
+                conca = [c for t in known_classes for c in t]
+                conca = np.concatenate(conca)
+            finally:
+                self.classes_ = np.unique(conca, axis=0)
+        else:
+            self.classes_ = given_classes
         self.n_classes_ = len(self.classes_)
 
     def _add_training_data(self, X: modALinput, y: modALinput):
         super()._add_training_data(X, y)
+        # if not isinstance(self.learner_list[0].estimator, Sequential):
+        #     self._set_classes()
 
-    def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> 'BaseCommittee':
+    def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> "BaseCommittee":
         """
         Fits every learner to a subset sampled with replacement from X. Calling this method makes the learner forget the
         data it has seen up until this point and replaces it with X! If you would like to perform bootstrapping on each
@@ -269,7 +339,14 @@ class Committee(BaseCommittee):
         super().fit(X, y, **fit_kwargs)
         self._set_classes()
 
-    def teach(self, X: modALinput, y: modALinput, bootstrap: bool = False, only_new: bool = False, **fit_kwargs) -> None:
+    def teach(
+        self,
+        X: modALinput,
+        y: modALinput,
+        bootstrap: bool = False,
+        only_new: bool = False,
+        **fit_kwargs
+    ) -> None:
         """
         Adds X and y to the known training data for each learner and retrains learners with the augmented dataset.
         Args:
@@ -293,10 +370,33 @@ class Committee(BaseCommittee):
         """
         # getting average certainties
         proba = self.predict_proba(X, **predict_proba_kwargs)
-        # finding the sample-wise max probability
-        max_proba_idx = np.argmax(proba, axis=1)
-        # translating label indices to labels
-        return self.classes_[max_proba_idx]
+
+        if proba.shape[1] > 4:  # multi output flatten, proba.shape[1] == 20
+            preds = np.split(proba[0], int(proba.shape[1] / self.n_classes_))
+
+            print("preds@predict in learners.py", preds)
+
+            fin_preds = []
+            for c in range(len(preds)):
+                col = preds[c]
+                rate_idx = np.argwhere(col > 0.5)
+                # 0.5 defined by the paper Cheng, J., Wang, Z., & Pollastri, G. (2008, June).
+                # A neural network approach to ordinal regression.
+                # In 2008 IEEE International Joint Conference on Neural Networks (IEEE World Congress on Computational Intelligence) (pp. 1279-1284). IEEE.
+                if rate_idx.size == 0:
+                    fin_preds.append(
+                        np.argmax(col)
+                    )  # regular implementation for data format with one-hot coding and so
+                else:
+                    fin_preds.append(rate_idx[-1][0])  # the paper implmenetation
+            # finding the sample-wise max probability
+            print("preds after argmax@predict in learners.py", fin_preds)
+            return fin_preds
+        else:
+            max_proba_idx = np.argmax(
+                proba, axis=1
+            )  # finding the sample-wise max probability
+            return self.classes_[max_proba_idx]  # translating label indices to labels
 
     def predict_proba(self, X: modALinput, **predict_proba_kwargs) -> Any:
         """
@@ -309,7 +409,9 @@ class Committee(BaseCommittee):
         """
         return np.mean(self.vote_proba(X, **predict_proba_kwargs), axis=1)
 
-    def score(self, X: modALinput, y: modALinput, sample_weight: List[float] = None) -> Any:
+    def score(
+        self, X: modALinput, y: modALinput, sample_weight: List[float] = None
+    ) -> Any:
         """
         Returns the mean accuracy on the given test data and labels.
         Todo:
@@ -333,11 +435,32 @@ class Committee(BaseCommittee):
         Returns:
             The predicted class for each learner in the Committee and each sample in X.
         """
-        prediction = np.zeros(shape=(X.shape[0], len(self.learner_list)))
+        n_learners = len(self.learner_list)
+        prediction = np.zeros(
+            shape=(X.shape[0], n_learners * 20)
+        )  # in the shape of multiple columns, put next to each other
 
+        p_idx = 0  # initialization for padding
         for learner_idx, learner in enumerate(self.learner_list):
-            prediction[:, learner_idx] = learner.predict(X, **predict_kwargs)
+            tmp_prediction = learner.predict(X, **predict_kwargs)
 
+            if isinstance(
+                learner.estimator, Sequential
+            ):  # check if the learner.estimator is a Keras model
+                splited_y = np.hsplit(
+                    tmp_prediction, 4
+                )  # because we only have four quality factors atm...
+                rating_vals = np.array(
+                    list(map(lambda x: np.argmax(x, axis=1), splited_y))
+                )
+                y_classes = (
+                    rating_vals.transpose()
+                )  # now let's stack up the splited list, indices of rating vote
+                prediction = (
+                    y_classes
+                    if learner_idx == 0
+                    else np.hstack((prediction, y_classes))
+                )
         return prediction
 
     def vote_proba(self, X: modALinput, **predict_proba_kwargs) -> Any:
@@ -348,28 +471,10 @@ class Committee(BaseCommittee):
             **predict_proba_kwargs: Keyword arguments for the :meth:`predict_proba` of the learners.
         Returns:
             Probabilities of each class for each learner and each instance.
-        """
-
-        # get dimensions
-        n_samples = X.shape[0]
-        n_learners = len(self.learner_list)
-        proba = np.zeros(shape=(n_samples, n_learners, self.n_classes_))
-
-        # checking if the learners in the Committee know the same set of class labels
-        if check_class_labels(*[learner.estimator for learner in self.learner_list]):
-            # known class labels are the same for each learner
-            # probability prediction is straightforward
-
-            for learner_idx, learner in enumerate(self.learner_list):
-                proba[:, learner_idx, :] = learner.predict_proba(X, **predict_proba_kwargs)
-
-        else:
-            for learner_idx, learner in enumerate(self.learner_list):
-                proba[:, learner_idx, :] = check_class_proba(
-                    proba=learner.predict_proba(X, **predict_proba_kwargs),
-                    known_labels=learner.estimator.classes_,
-                    all_labels=self.classes_
-                )
-
+        """       
+        proba = np.zeros(shape=(X.shape[0], len(self.learner_list), 20))
+        for learner_idx, learner in enumerate(self.learner_list):
+            tmp_p = learner.predict_proba(X, **predict_proba_kwargs)
+            tmp_t = tmp_p.transpose()
+            proba[:, learner_idx, :] = tmp_p
         return proba
-

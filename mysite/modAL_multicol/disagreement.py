@@ -13,7 +13,9 @@ from modAL.utils.data import modALinput
 from modAL.utils.selection import multi_argmax, shuffled_argmax
 
 
-def vote_entropy(committee: BaseCommittee, X: modALinput, **predict_proba_kwargs) -> np.ndarray:
+def vote_entropy(
+    committee: BaseCommittee, X: modALinput, **predict_proba_kwargs
+) -> np.ndarray:
     """
     Calculates the vote entropy for the Committee. First it computes the predictions of X for each learner in the
     Committee, then calculates the probability distribution of the votes. The entropy of this distribution is the vote
@@ -33,19 +35,36 @@ def vote_entropy(committee: BaseCommittee, X: modALinput, **predict_proba_kwargs
     except NotFittedError:
         return np.zeros(shape=(X.shape[0],))
 
-    p_vote = np.zeros(shape=(X.shape[0], len(committee.classes_)))
-
+    entr = np.zeros(shape=(X.shape[0],))
+    n_output_cols = int(votes.shape[1] / n_learners)  # 4 output columns
+    p_vote = np.zeros(
+        shape=(X.shape[0], len(committee.classes_) * n_output_cols)
+    )  # 200000, 5*8/2 -> 200000, 20 (5 classes * 4 output columns)
     for vote_idx, vote in enumerate(votes):
-        vote_counter = Counter(vote)
+        split_vote = np.split(vote, n_learners)
+        multi_vote_counter = list(
+            map(lambda c: Counter(list(map(lambda x: x[c], split_vote))), [0, 1, 2, 3])
+        )  # for each column, return the counter of votes
+        # put the average vote count in the p_vote, in which has [vote_idx, multi_class_idx]
+        # multi_class_idx: size of 20 => 5*4 => [0,1,2,3,4 | 5,6,7,8,9 | 10,11,12,13,14 | 15,16,17,18,19]
+        for c in range(n_output_cols):
+            mvc_c = multi_vote_counter[c]
+            for key in mvc_c:
+                key = int(key)
+                if mvc_c[key] > 0:
+                    multi_class_idx = c * 5 + key if c > 0 else key
+                    p_vote[vote_idx, multi_class_idx] = mvc_c[key] / n_learners
+        entr[vote_idx] = entropy(
+            p_vote[vote_idx]
+        )  # entropy is calculated for each data_point (index) of X
 
-        for class_idx, class_label in enumerate(committee.classes_):
-            p_vote[vote_idx, class_idx] = vote_counter[class_label]/n_learners
-
-    entr = entropy(p_vote, axis=1)
+    # print(split_vote, p_vote[vote_idx], entr[vote_idx])
     return entr
 
 
-def consensus_entropy(committee: BaseCommittee, X: modALinput, **predict_proba_kwargs) -> np.ndarray:
+def consensus_entropy(
+    committee: BaseCommittee, X: modALinput, **predict_proba_kwargs
+) -> np.ndarray:
     """
     Calculates the consensus entropy for the Committee. First it computes the class probabilties of X for each learner
     in the Committee, then calculates the consensus probability distribution by averaging the individual class
@@ -69,7 +88,9 @@ def consensus_entropy(committee: BaseCommittee, X: modALinput, **predict_proba_k
     return entr
 
 
-def KL_max_disagreement(committee: BaseCommittee, X: modALinput, **predict_proba_kwargs) -> np.ndarray:
+def KL_max_disagreement(
+    committee: BaseCommittee, X: modALinput, **predict_proba_kwargs
+) -> np.ndarray:
     """
     Calculates the max disagreement for the Committee. First it computes the class probabilties of X for each learner in
     the Committee, then calculates the consensus probability distribution by averaging the individual class
@@ -94,14 +115,20 @@ def KL_max_disagreement(committee: BaseCommittee, X: modALinput, **predict_proba
 
     learner_KL_div = np.zeros(shape=(X.shape[0], len(committee)))
     for learner_idx, _ in enumerate(committee):
-        learner_KL_div[:, learner_idx] = entropy(np.transpose(p_vote[:, learner_idx, :]), qk=np.transpose(p_consensus))
+        learner_KL_div[:, learner_idx] = entropy(
+            np.transpose(p_vote[:, learner_idx, :]), qk=np.transpose(p_consensus)
+        )
 
     return np.max(learner_KL_div, axis=1)
 
 
-def vote_entropy_sampling(committee: BaseCommittee, X: modALinput,
-                          n_instances: int = 1, random_tie_break=False,
-                          **disagreement_measure_kwargs) -> np.ndarray:
+def vote_entropy_sampling(
+    committee: BaseCommittee,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break=True,
+    **disagreement_measure_kwargs
+) -> np.ndarray:
     """
     Vote entropy sampling strategy.
 
@@ -116,7 +143,7 @@ def vote_entropy_sampling(committee: BaseCommittee, X: modALinput,
 
     Returns:
         The indices of the instances from X chosen to be labelled.
-        The disagrerment metric of the chosen instances. 
+        The disagrerment metric of the chosen instances.
 
     """
     disagreement = vote_entropy(committee, X, **disagreement_measure_kwargs)
@@ -127,9 +154,13 @@ def vote_entropy_sampling(committee: BaseCommittee, X: modALinput,
     return shuffled_argmax(disagreement, n_instances=n_instances)
 
 
-def consensus_entropy_sampling(committee: BaseCommittee, X: modALinput,
-                               n_instances: int = 1, random_tie_break=False,
-                               **disagreement_measure_kwargs) -> np.ndarray:
+def consensus_entropy_sampling(
+    committee: BaseCommittee,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break=False,
+    **disagreement_measure_kwargs
+) -> np.ndarray:
     """
     Consensus entropy sampling strategy.
 
@@ -144,7 +175,7 @@ def consensus_entropy_sampling(committee: BaseCommittee, X: modALinput,
 
     Returns:
         The indices of the instances from X chosen to be labelled.
-        The disagrerment metric of the chosen instances. 
+        The disagrerment metric of the chosen instances.
 
     """
     disagreement = consensus_entropy(committee, X, **disagreement_measure_kwargs)
@@ -155,9 +186,13 @@ def consensus_entropy_sampling(committee: BaseCommittee, X: modALinput,
     return shuffled_argmax(disagreement, n_instances=n_instances)
 
 
-def max_disagreement_sampling(committee: BaseCommittee, X: modALinput,
-                              n_instances: int = 1, random_tie_break=False,
-                              **disagreement_measure_kwargs) -> np.ndarray:
+def max_disagreement_sampling(
+    committee: BaseCommittee,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break=False,
+    **disagreement_measure_kwargs
+) -> np.ndarray:
     """
     Maximum disagreement sampling strategy.
 
@@ -172,7 +207,7 @@ def max_disagreement_sampling(committee: BaseCommittee, X: modALinput,
 
     Returns:
         The indices of the instances from X chosen to be labelled.
-        The disagrerment metric of the chosen instances. 
+        The disagrerment metric of the chosen instances.
 
     """
     disagreement = KL_max_disagreement(committee, X, **disagreement_measure_kwargs)
@@ -183,9 +218,13 @@ def max_disagreement_sampling(committee: BaseCommittee, X: modALinput,
     return shuffled_argmax(disagreement, n_instances=n_instances)
 
 
-def max_std_sampling(regressor: BaseEstimator, X: modALinput,
-                     n_instances: int = 1,  random_tie_break=False,
-                     **predict_kwargs) -> np.ndarray:
+def max_std_sampling(
+    regressor: BaseEstimator,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break=False,
+    **predict_kwargs
+) -> np.ndarray:
     """
     Regressor standard deviation sampling strategy.
 
@@ -199,11 +238,13 @@ def max_std_sampling(regressor: BaseEstimator, X: modALinput,
 
     Returns:
         The indices of the instances from X chosen to be labelled.
-        The standard deviation of the chosen instances. 
+        The standard deviation of the chosen instances.
 
     """
     _, std = regressor.predict(X, return_std=True, **predict_kwargs)
-    std = std.reshape(X.shape[0], )
+    std = std.reshape(
+        X.shape[0],
+    )
 
     if not random_tie_break:
         return multi_argmax(std, n_instances=n_instances)

@@ -5,12 +5,19 @@ from sklearn.multiclass import OneVsRestClassifier
 
 from modAL.models import ActiveLearner
 from modAL.utils.data import modALinput
-from modAL.utils.selection import (multi_argmax, multi_argmin, shuffled_argmax,
-                                   shuffled_argmin)
+from modAL.utils.selection import (
+    multi_argmax,
+    multi_argmin,
+    shuffled_argmax,
+    shuffled_argmin,
+)
 
 
-def _SVM_loss(multiclass_classifier: ActiveLearner,
-              X: modALinput, most_certain_classes: Optional[int] = None) -> np.ndarray:
+def _SVM_loss(
+    multiclass_classifier: ActiveLearner,
+    X: modALinput,
+    most_certain_classes: Optional[int] = None,
+) -> np.ndarray:
     """
     Utility function for max_loss and mean_max_loss strategies.
 
@@ -25,12 +32,12 @@ def _SVM_loss(multiclass_classifier: ActiveLearner,
         np.ndarray of shape (n_instances, ), losses for the instances in X.
 
     """
-    predictions = 2*multiclass_classifier.predict(X)-1
+    predictions = 2 * multiclass_classifier.predict(X) - 1
     n_classes = len(multiclass_classifier.classes_)
 
     if most_certain_classes is None:
-        cls_mtx = 2*np.eye(n_classes, n_classes) - 1
-        loss_mtx = np.maximum(1-np.dot(predictions, cls_mtx), 0)
+        cls_mtx = 2 * np.eye(n_classes, n_classes) - 1
+        loss_mtx = np.maximum(1 - np.dot(predictions, cls_mtx), 0)
         return loss_mtx.mean(axis=1)
     else:
         cls_mtx = -np.ones(shape=(len(X), n_classes))
@@ -41,8 +48,9 @@ def _SVM_loss(multiclass_classifier: ActiveLearner,
         return cls_loss
 
 
-def SVM_binary_minimum(classifier: ActiveLearner, X_pool: modALinput,
-                       random_tie_break: bool = False) -> np.ndarray:
+def SVM_binary_minimum(
+    classifier: ActiveLearner, X_pool: modALinput, random_tie_break: bool = False
+) -> np.ndarray:
     """
     SVM binary minimum multilabel active learning strategy. For details see the paper
     Klaus Brinker, On Active Learning in Multi-label Classification
@@ -58,11 +66,12 @@ def SVM_binary_minimum(classifier: ActiveLearner, X_pool: modALinput,
     Returns:
         The index of the instance from X_pool chosen to be labelled;
         The instance from X_pool chosen to be labelled.
-        The Minimum absolute distance metric of the chosen instance; 
+        The Minimum absolute distance metric of the chosen instance;
     """
 
-    decision_function = np.array([svm.decision_function(X_pool)
-                                  for svm in classifier.estimator.estimators_]).T
+    decision_function = np.array(
+        [svm.decision_function(X_pool) for svm in classifier.estimator.estimators_]
+    ).T
 
     min_abs_dist = np.min(np.abs(decision_function), axis=1)
 
@@ -72,9 +81,12 @@ def SVM_binary_minimum(classifier: ActiveLearner, X_pool: modALinput,
     return shuffled_argmax(min_abs_dist)
 
 
-def max_loss(classifier: OneVsRestClassifier, X_pool: modALinput,
-             n_instances: int = 1, random_tie_break: bool = False) -> np.ndarray:
-
+def max_loss(
+    classifier: OneVsRestClassifier,
+    X_pool: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+) -> np.ndarray:
     """
     Max Loss query strategy for SVM multilabel classification.
 
@@ -93,11 +105,11 @@ def max_loss(classifier: OneVsRestClassifier, X_pool: modALinput,
     Returns:
         The index of the instance from X_pool chosen to be labelled;
         The instance from X_pool chosen to be labelled.
-        The SVM-loss-max metric of the chosen instances; 
+        The SVM-loss-max metric of the chosen instances;
 
     """
 
-    assert len(X_pool) >= n_instances, 'n_instances cannot be larger than len(X_pool)'
+    assert len(X_pool) >= n_instances, "n_instances cannot be larger than len(X_pool)"
 
     most_certain_classes = classifier.predict_proba(X_pool).argmax(axis=1)
     loss = _SVM_loss(classifier, X_pool, most_certain_classes=most_certain_classes)
@@ -108,8 +120,12 @@ def max_loss(classifier: OneVsRestClassifier, X_pool: modALinput,
     return shuffled_argmax(loss, n_instances)
 
 
-def mean_max_loss(classifier: OneVsRestClassifier, X_pool: modALinput,
-                  n_instances: int = 1, random_tie_break: bool = False) -> np.ndarray:
+def mean_max_loss(
+    classifier: OneVsRestClassifier,
+    X_pool: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+) -> np.ndarray:
     """
     Mean Max Loss query strategy for SVM multilabel classification.
 
@@ -127,11 +143,11 @@ def mean_max_loss(classifier: OneVsRestClassifier, X_pool: modALinput,
 
     Returns:
         The index of the instance from X_pool chosen to be labelled.
-        The SVM-loss metric of the chosen instances. 
+        The SVM-loss metric of the chosen instances.
 
     """
 
-    assert len(X_pool) >= n_instances, 'n_instances cannot be larger than len(X_pool)'
+    assert len(X_pool) >= n_instances, "n_instances cannot be larger than len(X_pool)"
     loss = _SVM_loss(classifier, X_pool)
 
     if not random_tie_break:
@@ -140,8 +156,12 @@ def mean_max_loss(classifier: OneVsRestClassifier, X_pool: modALinput,
     return shuffled_argmax(loss, n_instances)
 
 
-def min_confidence(classifier: OneVsRestClassifier, X_pool: modALinput,
-                   n_instances: int = 1, random_tie_break: bool = False) -> np.ndarray:
+def min_confidence(
+    classifier: OneVsRestClassifier,
+    X_pool: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+) -> np.ndarray:
     """
     MinConfidence query strategy for multilabel classification.
 
@@ -157,7 +177,7 @@ def min_confidence(classifier: OneVsRestClassifier, X_pool: modALinput,
 
     Returns:
         The index of the instance from X_pool chosen to be labelled.
-        The minimal confidence metric of the chosen instance. 
+        The minimal confidence metric of the chosen instance.
 
     """
 
@@ -170,8 +190,12 @@ def min_confidence(classifier: OneVsRestClassifier, X_pool: modALinput,
     return shuffled_argmin(classwise_min, n_instances)
 
 
-def avg_confidence(classifier: OneVsRestClassifier, X_pool: modALinput,
-                   n_instances: int = 1, random_tie_break: bool = False) -> np.ndarray:
+def avg_confidence(
+    classifier: OneVsRestClassifier,
+    X_pool: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+) -> np.ndarray:
     """
     AvgConfidence query strategy for multilabel classification.
 
@@ -187,7 +211,7 @@ def avg_confidence(classifier: OneVsRestClassifier, X_pool: modALinput,
 
     Returns:
         The index of the instance from X_pool chosen to be labelled.
-        The average confidence metric of the chosen instances. 
+        The average confidence metric of the chosen instances.
 
     """
 
@@ -200,8 +224,12 @@ def avg_confidence(classifier: OneVsRestClassifier, X_pool: modALinput,
     return shuffled_argmax(classwise_mean, n_instances)
 
 
-def max_score(classifier: OneVsRestClassifier, X_pool: modALinput,
-              n_instances: int = 1, random_tie_break: bool = 1) -> np.ndarray:
+def max_score(
+    classifier: OneVsRestClassifier,
+    X_pool: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = 1,
+) -> np.ndarray:
     """
     MaxScore query strategy for multilabel classification.
 
@@ -217,13 +245,13 @@ def max_score(classifier: OneVsRestClassifier, X_pool: modALinput,
 
     Returns:
         The index of the instance from X_pool chosen to be labelled.
-        The classwise maximum metric of the chosen instances. 
+        The classwise maximum metric of the chosen instances.
 
     """
 
     classwise_confidence = classifier.predict_proba(X_pool)
     classwise_predictions = classifier.predict(X_pool)
-    classwise_scores = classwise_confidence*(classwise_predictions - 1/2)
+    classwise_scores = classwise_confidence * (classwise_predictions - 1 / 2)
     classwise_max = np.max(classwise_scores, axis=1)
 
     if not random_tie_break:
@@ -232,8 +260,12 @@ def max_score(classifier: OneVsRestClassifier, X_pool: modALinput,
     return shuffled_argmax(classwise_max, n_instances)
 
 
-def avg_score(classifier: OneVsRestClassifier, X_pool: modALinput,
-              n_instances: int = 1, random_tie_break: bool = False) -> np.ndarray:
+def avg_score(
+    classifier: OneVsRestClassifier,
+    X_pool: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+) -> np.ndarray:
     """
     AvgScore query strategy for multilabel classification.
 
@@ -255,7 +287,7 @@ def avg_score(classifier: OneVsRestClassifier, X_pool: modALinput,
 
     classwise_confidence = classifier.predict_proba(X_pool)
     classwise_predictions = classifier.predict(X_pool)
-    classwise_scores = classwise_confidence*(classwise_predictions-1/2)
+    classwise_scores = classwise_confidence * (classwise_predictions - 1 / 2)
     classwise_mean = np.mean(classwise_scores, axis=1)
 
     if not random_tie_break:

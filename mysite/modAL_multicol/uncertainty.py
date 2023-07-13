@@ -8,8 +8,12 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 
 from modAL.utils.data import modALinput
-from modAL.utils.selection import (multi_argmax, multi_argmin, shuffled_argmax,
-                                   shuffled_argmin)
+from modAL.utils.selection import (
+    multi_argmax,
+    multi_argmin,
+    shuffled_argmax,
+    shuffled_argmin,
+)
 
 
 def _proba_uncertainty(proba: np.ndarray) -> np.ndarray:
@@ -41,7 +45,7 @@ def _proba_margin(proba: np.ndarray) -> np.ndarray:
         return np.zeros(shape=len(proba))
 
     part = np.partition(-proba, 1, axis=1)
-    margin = - part[:, 0] + part[:, 1]
+    margin = -part[:, 0] + part[:, 1]
 
     return margin
 
@@ -60,7 +64,9 @@ def _proba_entropy(proba: np.ndarray) -> np.ndarray:
     return np.transpose(entropy(np.transpose(proba)))
 
 
-def classifier_uncertainty(classifier: BaseEstimator, X: modALinput, **predict_proba_kwargs) -> np.ndarray:
+def classifier_uncertainty(
+    classifier: BaseEstimator, X: modALinput, **predict_proba_kwargs
+) -> np.ndarray:
     """
     Classification uncertainty of the classifier for the provided samples.
 
@@ -76,14 +82,16 @@ def classifier_uncertainty(classifier: BaseEstimator, X: modALinput, **predict_p
     try:
         classwise_uncertainty = classifier.predict_proba(X, **predict_proba_kwargs)
     except NotFittedError:
-        return np.ones(shape=(X.shape[0], ))
+        return np.ones(shape=(X.shape[0],))
 
     # for each point, select the maximum uncertainty
     uncertainty = 1 - np.max(classwise_uncertainty, axis=1)
     return uncertainty
 
 
-def classifier_margin(classifier: BaseEstimator, X: modALinput, **predict_proba_kwargs) -> np.ndarray:
+def classifier_margin(
+    classifier: BaseEstimator, X: modALinput, **predict_proba_kwargs
+) -> np.ndarray:
     """
     Classification margin uncertainty of the classifier for the provided samples. This uncertainty measure takes the
     first and second most likely predictions and takes the difference of their probabilities, which is the margin.
@@ -99,18 +107,20 @@ def classifier_margin(classifier: BaseEstimator, X: modALinput, **predict_proba_
     try:
         classwise_uncertainty = classifier.predict_proba(X, **predict_proba_kwargs)
     except NotFittedError:
-        return np.zeros(shape=(X.shape[0], ))
+        return np.zeros(shape=(X.shape[0],))
 
     if classwise_uncertainty.shape[1] == 1:
         return np.zeros(shape=(classwise_uncertainty.shape[0],))
 
     part = np.partition(-classwise_uncertainty, 1, axis=1)
-    margin = - part[:, 0] + part[:, 1]
+    margin = -part[:, 0] + part[:, 1]
 
     return margin
 
 
-def classifier_entropy(classifier: BaseEstimator, X: modALinput, **predict_proba_kwargs) -> np.ndarray:
+def classifier_entropy(
+    classifier: BaseEstimator, X: modALinput, **predict_proba_kwargs
+) -> np.ndarray:
     """
     Entropy of predictions of the for the provided samples.
 
@@ -125,14 +135,18 @@ def classifier_entropy(classifier: BaseEstimator, X: modALinput, **predict_proba
     try:
         classwise_uncertainty = classifier.predict_proba(X, **predict_proba_kwargs)
     except NotFittedError:
-        return np.zeros(shape=(X.shape[0], ))
+        return np.zeros(shape=(X.shape[0],))
 
     return np.transpose(entropy(np.transpose(classwise_uncertainty)))
 
 
-def uncertainty_sampling(classifier: BaseEstimator, X: modALinput,
-                         n_instances: int = 1, random_tie_break: bool = False,
-                         **uncertainty_measure_kwargs) -> np.ndarray:
+def uncertainty_sampling(
+    classifier: BaseEstimator,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+    **uncertainty_measure_kwargs
+) -> np.ndarray:
     """
     Uncertainty sampling query strategy. Selects the least sure instances for labelling.
 
@@ -147,7 +161,7 @@ def uncertainty_sampling(classifier: BaseEstimator, X: modALinput,
 
     Returns:
         The indices of the instances from X chosen to be labelled.
-        The uncertainty metric of the chosen instances. 
+        The uncertainty metric of the chosen instances.
     """
     uncertainty = classifier_uncertainty(classifier, X, **uncertainty_measure_kwargs)
 
@@ -157,9 +171,13 @@ def uncertainty_sampling(classifier: BaseEstimator, X: modALinput,
     return shuffled_argmax(uncertainty, n_instances=n_instances)
 
 
-def margin_sampling(classifier: BaseEstimator, X: modALinput,
-                    n_instances: int = 1, random_tie_break: bool = False,
-                    **uncertainty_measure_kwargs) -> np.ndarray:
+def margin_sampling(
+    classifier: BaseEstimator,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+    **uncertainty_measure_kwargs
+) -> np.ndarray:
     """
     Margin sampling query strategy. Selects the instances where the difference between
     the first most likely and second most likely classes are the smallest.
@@ -183,9 +201,13 @@ def margin_sampling(classifier: BaseEstimator, X: modALinput,
     return shuffled_argmin(margin, n_instances=n_instances)
 
 
-def entropy_sampling(classifier: BaseEstimator, X: modALinput,
-                     n_instances: int = 1, random_tie_break: bool = False,
-                     **uncertainty_measure_kwargs) -> np.ndarray:
+def entropy_sampling(
+    classifier: BaseEstimator,
+    X: modALinput,
+    n_instances: int = 1,
+    random_tie_break: bool = False,
+    **uncertainty_measure_kwargs
+) -> np.ndarray:
     """
     Entropy sampling query strategy. Selects the instances where the class probabilities
     have the largest entropy.

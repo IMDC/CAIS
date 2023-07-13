@@ -1,5 +1,3 @@
-from .learners import (ActiveLearner, Committee)
+from .learners import ActiveLearner, Committee
 
-__all__ = [
-    'ActiveLearner', 'Committee'
-]
+__all__ = ["ActiveLearner", "Committee"]

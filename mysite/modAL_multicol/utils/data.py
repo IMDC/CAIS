@@ -75,7 +75,7 @@ def add_row(X: modALinput, row: modALinput):
 
     [X
 
-    row]    """
+    row]"""
     if isinstance(X, np.ndarray):
         return np.vstack((X, row))
     elif isinstance(X, list):
