@@ -74,13 +74,9 @@ for member_idx in range(commitee_members):
 act_model_learner = Committee(
     learner_list=learners, given_classes=np.array([1, 2, 3, 4, 5])
 )
-query_idx, q_instance = act_model_learner.query(cpy_xpool)
 
-
-queried_vals = sc_x.inverse_transform(q_instance)
-
-print(act_model_learner.predict(q_instance))
-
-
-# machine_prediction = list(np.array(act_model_learner.learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale
-# print("machine prediction:", machine_prediction, query_idx, queried_vals[0])
+for i in range(10):
+    query_idx, q_instance = act_model_learner.query(cpy_xpool)
+    queried_vals = sc_x.inverse_transform(q_instance)
+    machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
+    print("machine prediction:", machine_prediction, query_idx, queried_vals[0])

@@ -107,7 +107,8 @@ class BaseLearner(ABC, BaseEstimator):
         Returns:
             Class probabilities for X.
         """
-        return self.estimator.predict_proba(X, **predict_proba_kwargs)
+        predict_prob = self.estimator.predict(X, **predict_proba_kwargs)
+        return predict_prob
 
     def query(
         self, X_pool, *query_args, return_metrics: bool = False, **query_kwargs
