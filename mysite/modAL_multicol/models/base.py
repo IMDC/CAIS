@@ -68,16 +68,13 @@ class BaseLearner(ABC, BaseEstimator):
         Returns:
             self
         """
-        print(X)
-        print(y)
         if not bootstrap:
             self.estimator.fit(X, y, **fit_kwargs)
         else:
             bootstrap_idx = np.random.choice(
                 range(X.shape[0]), X.shape[0], replace=True
-            )
+            )            
             self.estimator.fit(X[bootstrap_idx], y[bootstrap_idx])
-
         return self
 
     @abc.abstractmethod

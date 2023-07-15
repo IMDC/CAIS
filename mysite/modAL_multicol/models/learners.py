@@ -375,9 +375,6 @@ class Committee(BaseCommittee):
 
         if proba.shape[1] > 4:  # multi output flatten, proba.shape[1] == 20
             preds = np.split(proba[0], int(proba.shape[1] / self.n_classes_))
-
-            print("preds@predict in learners.py", preds)
-
             fin_preds = []
             for c in range(len(preds)):
                 col = preds[c]
