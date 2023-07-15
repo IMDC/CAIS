@@ -129,9 +129,10 @@ class ActiveLearner(BaseLearner):
 
         Returns:
             self
-        """
+        """        
+
         if not bootstrap:
-            self.estimator.fit(self.X_training, self.y_training, **fit_kwargs)
+            self.estimator.fit(self.X_training, self.y_training, **fit_kwargs)            
         else:
             n_instances = self.X_training.shape[0]
             bootstrap_idx = np.random.choice(
@@ -293,37 +294,38 @@ class Committee(BaseCommittee):
         Checks the known class labels by each learner, merges the labels and returns a mapping which maps the learner's
         classes to the complete label list.
         """
-        # if isinstance(self.learner_list[0].estimator, Sequential):
-        #     self.classes_ = np.array([0, 1, 2, 3, 4])
-        # else:
-        if given_classes is None:  # class definition not given
-            # assemble the list of known classes from each learner
-            try:
-                # if estimators are fitted
-                known_classes = tuple(
-                    learner.estimator.classes_ for learner in self.learner_list
-                )
-                conca = np.concatenate(known_classes)
-                while conca[0].ndim > 0:  # handle when given has more dimension
-                    conca = np.concatenate(conca)
-            except AttributeError:
-                # handle unfitted estimators
-                self.classes_ = None
-                self.n_classes_ = 0
-                return
-            except ValueError:
-                conca = [c for t in known_classes for c in t]
-                conca = np.concatenate(conca)
-            finally:
-                self.classes_ = np.unique(conca, axis=0)
+        if isinstance(self.learner_list[0].estimator, Sequential):
+            self.classes_ = np.array([0, 1, 2, 3, 4])
+
         else:
-            self.classes_ = given_classes
+            if given_classes is None:  # class definition not given
+                # assemble the list of known classes from each learner
+                try:
+                    # if estimators are fitted
+                    known_classes = tuple(
+                        learner.estimator.classes_ for learner in self.learner_list
+                    )
+                    conca = np.concatenate(known_classes)
+                    while conca[0].ndim > 0:  # handle when given has more dimension
+                        conca = np.concatenate(conca)
+                except AttributeError:
+                    # handle unfitted estimators
+                    self.classes_ = None
+                    self.n_classes_ = 0
+                    return
+                except ValueError:
+                    conca = [c for t in known_classes for c in t]
+                    conca = np.concatenate(conca)
+                finally:
+                    self.classes_ = np.unique(conca, axis=0)
+            else:
+                self.classes_ = given_classes
         self.n_classes_ = len(self.classes_)
 
     def _add_training_data(self, X: modALinput, y: modALinput):
         super()._add_training_data(X, y)
-        # if not isinstance(self.learner_list[0].estimator, Sequential):
-        #     self._set_classes()
+        if not isinstance(self.learner_list[0].estimator, Sequential):
+            self._set_classes()
 
     def fit(self, X: modALinput, y: modALinput, **fit_kwargs) -> "BaseCommittee":
         """

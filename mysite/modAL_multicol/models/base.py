@@ -68,7 +68,8 @@ class BaseLearner(ABC, BaseEstimator):
         Returns:
             self
         """
-
+        print(X)
+        print(y)
         if not bootstrap:
             self.estimator.fit(X, y, **fit_kwargs)
         else:

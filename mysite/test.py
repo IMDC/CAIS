@@ -75,8 +75,26 @@ act_model_learner = Committee(
     learner_list=learners, given_classes=np.array([1, 2, 3, 4, 5])
 )
 
-for i in range(10):
-    query_idx, q_instance = act_model_learner.query(cpy_xpool)
-    queried_vals = sc_x.inverse_transform(q_instance)
-    machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
-    print("machine prediction:", machine_prediction, query_idx, queried_vals[0])
+# for i in range(10):
+query_idx, q_instance = act_model_learner.query(cpy_xpool)
+queried_vals = sc_x.inverse_transform(q_instance)
+machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
+print("machine prediction:", machine_prediction, query_idx, queried_vals[0])
+
+# now teach one-
+ratings=[1,1,1,1]
+np_ratings = np.zeros(
+    shape=(1, 20)
+)  # in the shape of multiple columns, padd with zeros
+for c in [0, 1, 2, 3]:
+    tmp_start = c * 5
+    tmp_i = c * 5 + ratings[c]
+    for w in range(tmp_start, tmp_i):
+        np_ratings[0, w] = 1
+
+# e.g., User ratings [1,3,4,2]:
+# [[1. 0. 0. 0. 0. | 1. 1. 1. 0. 0. | 1. 1. 1. 1. 0. | 1. 1. 0. 0. 0.]]
+# we convert form to (1,20) not (,20)
+# therefore, the 0-4 range for index doesn't really matter because we convert from 1-5 range to 1,20 anyways.
+act_model_learner.teach(q_instance, np_ratings, only_new=True, epochs=100, verbose=0)
+
