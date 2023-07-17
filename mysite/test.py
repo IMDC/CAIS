@@ -14,6 +14,9 @@ from modAL_multicol.disagreement import vote_entropy_sampling
 from modAL_multicol.multilabel import avg_score
 
 
+import random
+np.set_printoptions(suppress=True)
+
 def to_ordinal(y, num_classes=None, dtype="float32"):
     y = np.array(y, dtype="int")
     input_shape = y.shape
@@ -75,14 +78,18 @@ act_model_learner = Committee(
     learner_list=learners, given_classes=np.array([1, 2, 3, 4, 5])
 )
 
-for i in range(10):
+for i in range(5):
     query_idx, q_instance = act_model_learner.query(cpy_xpool)
     queried_vals = sc_x.inverse_transform(q_instance)
     machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
-    print("machine prediction:", machine_prediction, query_idx, queried_vals[0])
+    print(f"Pre-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}")
 
     # now teach one-
-    ratings=[1,3,4,2]
+    ratings=[random.randint(1, 5),
+             random.randint(1, 5),
+             random.randint(1, 5),
+             random.randint(1, 5)
+             ]
     np_ratings = np.zeros(
         shape=(1, 20)
     )  # in the shape of multiple columns, padd with zeros
@@ -92,11 +99,25 @@ for i in range(10):
         for w in range(tmp_start, tmp_i):
             np_ratings[0, w] = 1
 
-    # e.g., User ratings [1,3,4,2]:
-    # [[1. 0. 0. 0. 0. | 1. 1. 1. 0. 0. | 1. 1. 1. 1. 0. | 1. 1. 0. 0. 0.]]
-    # we convert form to (1,20) not (,20)
-    # therefore, the 0-4 range for index doesn't really matter because we convert from 1-5 range to 1,20 anyways.
-    act_model_learner.teach(q_instance, np_ratings, only_new=True, epochs=100, verbose=0)
+    print(f"Teaching:{ratings}")
+    act_model_learner.teach(X=q_instance, y=np_ratings, only_new=True, epochs=50, verbose=0)
     machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
-    print("machine prediction:", machine_prediction, query_idx, queried_vals[0])
+    print(f"After-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}")
+    print()
 
+
+
+
+###
+# So what now?
+# It works for
+# 1. Query
+#   1.1. vote on all X unlabelled pool, and find one sample that has the most disagreement on
+#   1.2. then choose this to ask human
+# 2. Predict
+#   2.1. predict on a given sample
+# 3. Teach
+#   3.1. fit the newly added 'answer' given from human
+#   3.2. did the new fitting work?
+#   
+# ###

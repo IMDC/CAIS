@@ -389,7 +389,7 @@ class Committee(BaseCommittee):
                 else:
                     fin_preds.append(rate_idx[-1][0])  # the paper implmenetation
             # finding the sample-wise max probability
-            print("preds after argmax@predict in learners.py", fin_preds)
+            # print("preds after argmax@predict in learners.py", fin_preds)
             return fin_preds
         else:
             max_proba_idx = np.argmax(
