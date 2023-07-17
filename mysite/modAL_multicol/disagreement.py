@@ -8,9 +8,9 @@ from scipy.stats import entropy
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 
-from modAL.models.base import BaseCommittee
-from modAL.utils.data import modALinput
-from modAL.utils.selection import multi_argmax, shuffled_argmax
+from modAL_multicol.models.base import BaseCommittee
+from modAL_multicol.utils.data import modALinput
+from modAL_multicol.utils.selection import multi_argmax, shuffled_argmax
 
 
 def vote_entropy(

@@ -10,7 +10,7 @@ from typing import Any, Callable, Iterator, List, Tuple, Union
 
 import numpy as np
 import scipy.sparse as sp
-from modAL.utils.data import data_hstack, modALinput, retrieve_rows
+from modAL_multicol.utils.data import data_hstack, modALinput, retrieve_rows
 from sklearn.base import BaseEstimator
 from sklearn.ensemble._base import _BaseHeterogeneousEnsemble
 from sklearn.pipeline import Pipeline

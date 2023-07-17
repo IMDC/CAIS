@@ -8,9 +8,9 @@ import numpy as np
 from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
 
-from modAL.models import ActiveLearner
-from modAL.uncertainty import _proba_entropy, _proba_uncertainty
-from modAL.utils.data import (
+from modAL_multicol.models import ActiveLearner
+from modAL_multicol.uncertainty import _proba_entropy, _proba_uncertainty
+from modAL_multicol.utils.data import (
     add_row,
     data_shape,
     data_vstack,
@@ -18,7 +18,7 @@ from modAL.utils.data import (
     enumerate_data,
     modALinput,
 )
-from modAL.utils.selection import multi_argmin, shuffled_argmin
+from modAL_multicol.utils.selection import multi_argmin, shuffled_argmin
 
 
 def expected_error_reduction(

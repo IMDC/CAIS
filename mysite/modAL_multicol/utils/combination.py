@@ -1,7 +1,7 @@
 from typing import Callable, Optional, Sequence, Tuple
 
 import numpy as np
-from modAL.utils.data import modALinput
+from modAL_multicol.utils.data import modALinput
 from sklearn.base import BaseEstimator
 
 

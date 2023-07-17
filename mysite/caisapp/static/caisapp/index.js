@@ -1,50 +1,3 @@
-let triviaIndex = JSON.parse(document.getElementById('trivia-questions').textContent);
-
-function handletrivia(){
-    timeCounter();
-    triviaFacts(triviaIndex[0]);
-    var answer_text = $("#answerDiv").find("div").text().slice(-1);
-
-    setTimeout(function(){        
-        var option_text = $('input[name=options]:checked', '#trivia-question').val();
-        if (answer_text === option_text){
-            $("#trivia-answer").html() = "<b>Correct!</b>";
-            $("#trivia-answer").css("color", "green");
-            $("#answerDiv").toggleClass("visible");
-        }else{
-            $("#trivia-answer").css("color", "red");
-            $("#answerDiv").toggleClass("visible");
-        };
-        setTimeout(function(){
-            $("#answerDiv").toggleClass("visible");
-            triviaFacts(triviaIndex[1]);
-            var answer_text = $("#answerDiv").find("div").slice(-1);
-            
-            setTimeout(function(){
-                var option_text = $('input[name=options]:checked', '#trivia-question').val();
-                if (answer_text === option_text){
-                    $("#trivia-answer").html() = "<b>Correct!</b>";
-                    $("#trivia-answer").css("color", "green");
-                    $("#answerDiv").toggleClass("visible");
-                }else{
-                    $("#trivia-answer").css("color", "red");
-                    $("#answerDiv").toggleClass("visible");
-                };
-            }, 3000);
-
-        }, 3000);
-
-    }, 6000);
-    
-};
-
-function modalHandler(element){
-    element.dataset.target = "#ModalCenter";
-    $('#ModalCenter').modal();
-    $('#ModalCenter').show();
-    $('#ModalCenter').on('shown.bs.modal', handletrivia());
-};
-
 function checkForm(){
     let formValidation = true;
     console.log("validateForm()->starsetBooleans: ");
@@ -58,7 +11,6 @@ function checkForm(){
     if (formValidation){
         submitRatings();        
         let element = document.getElementById('submitRating');
-        modalHandler(element);
         return true;
     }else{
         $('.alert').show();

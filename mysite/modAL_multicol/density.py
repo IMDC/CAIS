@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial.distance import cosine, euclidean
 from sklearn.metrics.pairwise import pairwise_distances
 
-from modAL.utils.data import modALinput
+from modAL_multicol.utils.data import modALinput
 
 
 def similarize_distance(distance_measure: Callable) -> Callable:

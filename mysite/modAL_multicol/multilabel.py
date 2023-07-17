@@ -3,9 +3,9 @@ from typing import Optional
 import numpy as np
 from sklearn.multiclass import OneVsRestClassifier
 
-from modAL.models import ActiveLearner
-from modAL.utils.data import modALinput
-from modAL.utils.selection import (
+from modAL_multicol.models import ActiveLearner
+from modAL_multicol.utils.data import modALinput
+from modAL_multicol.utils.selection import (
     multi_argmax,
     multi_argmin,
     shuffled_argmax,

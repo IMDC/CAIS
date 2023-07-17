@@ -7,8 +7,8 @@ from scipy.special import entr
 from sklearn.base import BaseEstimator
 from skorch.utils import to_numpy
 
-from modAL.utils.data import modALinput
-from modAL.utils.selection import multi_argmax, shuffled_argmax
+from modAL_multicol.utils.data import modALinput
+from modAL_multicol.utils.selection import multi_argmax, shuffled_argmax
 
 
 def default_logits_adaptor(input_tensor: torch.tensor, samples: modALinput):
