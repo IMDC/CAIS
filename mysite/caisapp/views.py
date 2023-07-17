@@ -171,6 +171,73 @@ def training(request):
             return training(request)
 
 
+def client_to_view(request):
+    if request.method == "POST":
+        print("now in client_to_view function@views.py")
+        global WAIT_SWITCH
+        WAIT_SWITCH = False
+        print("WAIT SWITCH@client_to_view={} manidx={}".format(WAIT_SWITCH, MANUAL_IDX))
+        client_rating = json.loads(request.POST["client_id"])
+        client_rating = [int(i) for i in client_rating]
+        client_list = list(map(lambda x: int(x), client_rating))
+        category = Category.objects.filter(name=VIDEO_CATEGORY)[0]
+        q = Question.objects.filter(text="videoresp")[0]
+        resp = Response.objects.filter(interview_uuid=UUID).last()
+
+        if apps.get_app_config("home").count in MANUAL_IDX:
+            print(
+                "Learn Count={} MANUAL_IDX={}".format(
+                    apps.get_app_config("home").count, MANUAL_IDX
+                )
+            )
+            queried_val = [[0, 0, 0, 0]]
+            apps.get_app_config("home").count = apps.get_app_config("home").count + 1
+            global MANUAL_COUNTER
+            MANUAL_COUNTER = MANUAL_COUNTER + 1
+        else:
+            learner, queried_val = apps.get_app_config("home").learn_ratings(
+                CUR_QINSTANCE, client_list
+            )
+            print(
+                "cur_PREDS={}, queried_val={}, cur_qinstance={} @client_to_view".format(
+                    CUR_PREDS, queried_val, CUR_QINSTANCE
+                )
+            )
+            if (
+                apps.get_app_config("home").count == 0
+            ):  # If no Blob rows exist, this will run the first time.
+                f1, f2, bname = ORIGINALH5_ONE, ORIGINALH5_TWO, "originalModel"
+            else:
+                f1, f2, bname = MODIFIEDH5_ONE, MODIFIEDH5_TWO, "learnedModel"
+            learner.save_model(f1, f2)
+            blob = Blobby.objects.create(response=resp, name=bname)
+            blob.set_data_one(f1)
+            blob.set_data_two(f2)
+            blob.save()
+
+        AnswerVideo.objects.create(
+            caption_title=CAPTION_TITLE,
+            clip_title=VIDEO_TITLE,
+            delay=queried_val[0][0],
+            speed=queried_val[0][1],
+            mw=queried_val[0][2],
+            pv=queried_val[0][3],
+            delay_pred=CUR_PREDS[0],
+            speed_pred=CUR_PREDS[1],
+            mw_pred=CUR_PREDS[2],
+            pv_pred=CUR_PREDS[3],
+            question=q,
+            response=resp,
+            category=category,
+            body=client_list,
+        )
+        WAIT_SWITCH = True
+        print("Posted! WAIT_SWITCH IS NOW:", WAIT_SWITCH)
+        return HttpResponse("success")
+    else:
+        print(request.method)
+        return HttpResponse("success")
+
 def bye(request):
     print("STUDY FINISHED WITH THIS PARTICIPANT.")
     email = "somang.nam[at]torontomu.ca"

@@ -73,7 +73,7 @@ class BaseLearner(ABC, BaseEstimator):
         else:
             bootstrap_idx = np.random.choice(
                 range(X.shape[0]), X.shape[0], replace=True
-            )            
+            )
             self.estimator.fit(X[bootstrap_idx], y[bootstrap_idx])
         return self
 

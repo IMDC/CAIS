@@ -129,10 +129,10 @@ class ActiveLearner(BaseLearner):
 
         Returns:
             self
-        """        
+        """
 
         if not bootstrap:
-            self.estimator.fit(self.X_training, self.y_training, **fit_kwargs)            
+            self.estimator.fit(self.X_training, self.y_training, **fit_kwargs)
         else:
             n_instances = self.X_training.shape[0]
             bootstrap_idx = np.random.choice(
@@ -470,7 +470,7 @@ class Committee(BaseCommittee):
             **predict_proba_kwargs: Keyword arguments for the :meth:`predict_proba` of the learners.
         Returns:
             Probabilities of each class for each learner and each instance.
-        """       
+        """
         proba = np.zeros(shape=(X.shape[0], len(self.learner_list), 20))
         for learner_idx, learner in enumerate(self.learner_list):
             tmp_p = learner.predict_proba(X, **predict_proba_kwargs)

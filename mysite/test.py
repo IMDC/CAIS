@@ -15,7 +15,9 @@ from modAL_multicol.multilabel import avg_score
 
 
 import random
+
 np.set_printoptions(suppress=True)
+
 
 def to_ordinal(y, num_classes=None, dtype="float32"):
     y = np.array(y, dtype="int")
@@ -81,15 +83,20 @@ act_model_learner = Committee(
 for i in range(5):
     query_idx, q_instance = act_model_learner.query(cpy_xpool)
     queried_vals = sc_x.inverse_transform(q_instance)
-    machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
-    print(f"Pre-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}")
+    machine_prediction = list(
+        np.array(act_model_learner.predict(q_instance)) + 1
+    )  # add 1 to show in 1-5 scale
+    print(
+        f"Pre-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}"
+    )
 
     # now teach one-
-    ratings=[random.randint(1, 5),
-             random.randint(1, 5),
-             random.randint(1, 5),
-             random.randint(1, 5)
-             ]
+    ratings = [
+        random.randint(1, 5),
+        random.randint(1, 5),
+        random.randint(1, 5),
+        random.randint(1, 5),
+    ]
     np_ratings = np.zeros(
         shape=(1, 20)
     )  # in the shape of multiple columns, padd with zeros
@@ -100,12 +107,16 @@ for i in range(5):
             np_ratings[0, w] = 1
 
     print(f"Teaching:{ratings}")
-    act_model_learner.teach(X=q_instance, y=np_ratings, only_new=True, epochs=50, verbose=0)
-    machine_prediction = list(np.array(act_model_learner.predict(q_instance)) + 1)  # add 1 to show in 1-5 scale    
-    print(f"After-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}")
+    act_model_learner.teach(
+        X=q_instance, y=np_ratings, only_new=True, epochs=50, verbose=0
+    )
+    machine_prediction = list(
+        np.array(act_model_learner.predict(q_instance)) + 1
+    )  # add 1 to show in 1-5 scale
+    print(
+        f"After-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}"
+    )
     print()
-
-
 
 
 ###
@@ -119,5 +130,5 @@ for i in range(5):
 # 3. Teach
 #   3.1. fit the newly added 'answer' given from human
 #   3.2. did the new fitting work?
-#   
+#
 # ###

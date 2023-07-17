@@ -28,7 +28,6 @@ DATASIZE = 1000  # 20000 # 100000
 
 class ActiveLearningClient:
     def keras_model(self):
-        print("KERAS MODEL GENERATION")
         model = Sequential()
         model.add(Dense(units=20, input_dim=5, activation="relu"))
         model.add(Dense(units=20, activation="relu"))
@@ -44,65 +43,45 @@ class ActiveLearningClient:
         commitee_members = 2
         learners = list()
 
-        if not Blobby.objects.exists():  # below should only run for the very first time
-            print("FIRST PARTICIPANT!")
-            try:
-                df = pd.read_csv(
-                    str(settings.STATICFILES_DIRS[0]) + "/um_20000.csv",
-                    header=None,
-                    sep=",",
-                )
-                tmp_dataset = np.array(df)
-            except Exception as e:
-                print(e)
-                return
-            tmp_sc_x = RobustScaler()
-            cpy_xpool = tmp_sc_x.fit_transform(tmp_dataset[:, :5])
-            Y = pd.DataFrame(tmp_dataset[:, 5:])
-            encoded_Y = self.to_ordinal(Y)
-            cpy_ypool = encoded_Y.reshape([np.size(Y, 0), 20])
+        try:
+            df = pd.read_csv(
+                str(settings.STATICFILES_DIRS[0]) + "/um_20000.csv",
+                header=None,
+                sep=",",
+            )
+            tmp_dataset = np.array(df)
+        except Exception as e:
+            print(e)
+            return
+        tmp_sc_x = RobustScaler()
+        cpy_xpool = tmp_sc_x.fit_transform(tmp_dataset[:, :5])
+        Y = pd.DataFrame(tmp_dataset[:, 5:])
+        encoded_Y = self.to_ordinal(Y)
+        cpy_ypool = encoded_Y.reshape([np.size(Y, 0), 20])
 
-            n_initial = 300  # number of initial training data ~ this determines the ratio between user_model vs. human input to inquiry
+        n_initial = 300  # number of initial training data ~ this determines the ratio between user_model vs. human input to inquiry
 
-            for member_idx in range(commitee_members):
-                train_idx = np.random.choice(
-                    range(cpy_xpool.shape[0]), size=n_initial, replace=False
-                )
-                X_train, y_train = cpy_xpool[train_idx], cpy_ypool[train_idx]
-                cpy_xpool, cpy_ypool = np.delete(
-                    cpy_xpool, train_idx, axis=0
-                ), np.delete(cpy_ypool, train_idx, axis=0)
-                learner = ActiveLearner(
-                    estimator=self.keras_model(),
-                    X_training=X_train,
-                    y_training=y_train,
-                    query_strategy=avg_score,
-                )
-                learners.append(learner)
+        for member_idx in range(commitee_members):
+            train_idx = np.random.choice(
+                range(cpy_xpool.shape[0]), size=n_initial, replace=False
+            )
+            X_train, y_train = cpy_xpool[train_idx], cpy_ypool[train_idx]
+            cpy_xpool, cpy_ypool = np.delete(cpy_xpool, train_idx, axis=0), np.delete(
+                cpy_ypool, train_idx, axis=0
+            )
 
-        else:  # participant number > 1, we load models
-            orig_urls, mod_urls = [
-                settings.BASE_DIR + "/originalfirst.h5",
-                settings.BASE_DIR + "/originalsecond.h5",
-            ], [
-                settings.BASE_DIR + "/modifiedfirst.h5",
-                settings.BASE_DIR + "/modifiedsecond.h5",
-            ]
+            learner = ActiveLearner(
+                estimator=self.keras_model(),
+                query_strategy=avg_score,
+                X_training=X_train,
+                y_training=y_train,
+            )
+            learners.append(learner)
 
-            print(orig_urls, mod_urls)
+        act_model_learner = Committee(
+            learner_list=learners, given_classes=np.array([1, 2, 3, 4, 5])
+        )
 
-            for member_idx in range(commitee_members):
-                model_url = (
-                    orig_urls[member_idx]
-                    if Path(orig_urls[member_idx]).is_file()
-                    else mod_urls[member_idx]
-                )
-                print("\tLoaded Models from: {}\n".format(model_url))
-                model = keras.models.load_model(model_url)  # load the classifier
-                # when model was loaded, we don't train extra x and y
-                learners.append(
-                    ActiveLearner(estimator=model, query_strategy=avg_score)
-                )
         return Committee(learner_list=learners)
 
     def __init__(self):
