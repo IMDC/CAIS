@@ -70,7 +70,7 @@ def survey(request):
 
 
 def training(request):
-    max_vid_count = 20  # 20 videos
+    max_vid_count = 5  # number of videos
     global MANUAL_IDX, VIDEO_POOL, LIST_NUMBERS, CUR_PREDS, CUR_QINSTANCE, VIDEO_TITLE, WATCHED_VIDEOS, CAPTION_TITLE
 
     if len(VIDEO_POOL) == 0:  # when video pool is empty
@@ -78,75 +78,42 @@ def training(request):
     else:
         if WAIT_SWITCH:
             print("WAIT SWITCH@index", WAIT_SWITCH)
+            
             if apps.get_app_config("caisapp").count == 0:
-                apps.get_app_config("caisapp").set_x_pool()  # initiate the dataset..?
-            # 1. get prediction from cappy backend
-            q_instance, preds, queried_vals = apps.get_app_config(
+                apps.get_app_config("caisapp").set_x_pool()
+            
+            ## 1. get prediction from cappy backend
+            q_inst, preds, q_vals = apps.get_app_config(
                 "caisapp"
             ).make_prediction()
-
-            print(q_instance, preds, queried_vals.astype(int))
-            global CUR_PREDS
-            CUR_PREDS = preds
-            global CUR_QINSTANCE
-            CUR_QINSTANCE = q_instance
-
-            if (
-                q_instance is None
-            ):  # when there's no query_idx provided, we close the case
-                return render(request, "byebye.html")
-            # 2. parse the prediction passed from cappy.
+            print(q_inst, preds, q_vals.astype(int))
+            CUR_PREDS, CUR_QINSTANCE = preds, q_inst
+            ## 2. parse the prediction passed from cappy.
             preds = list(map(lambda x: int(x), preds))
             preds = json.dumps(preds)
-            # 3. load the video
+            ## 3. load the video
             rand_video_sess = random.choice(VIDEO_POOL)
-            global VIDEO_TITLE
             VIDEO_TITLE = rand_video_sess["fields"]["video_name"]
             VIDEO_POOL.remove(rand_video_sess)
-            global WATCHED_VIDEOS
             WATCHED_VIDEOS.append(rand_video_sess)
-
             print(
                 "VIDEO_POOL-length:{}, collection: {}".format(
                     len(VIDEO_POOL),
                     [vd["fields"]["video_name"] for vd in WATCHED_VIDEOS],
                 )
             )
-            
-            if apps.get_app_config("caisapp").count == 0:
-                # initiate the dataset
-                apps.get_app_config("caisapp").set_x_pool()
-            else:
-                ## 1. get prediction from cappy backend
-                q_instance, preds, queried_vals = apps.get_app_config(
-                    "caisapp"
-                ).make_prediction()
-                print(q_instance, preds, queried_vals.astype(int))
-                CUR_PREDS, CUR_QINSTANCE = preds, q_instance
-                ## 2. parse the prediction passed from cappy.
-                preds = list(map(lambda x: int(x), preds))
-                preds = json.dumps(preds)
-                ## 3. load the video
-                rand_video_sess = random.choice(VIDEO_POOL)
-                VIDEO_TITLE = rand_video_sess["fields"]["video_name"]
-                VIDEO_POOL.remove(rand_video_sess)
-                WATCHED_VIDEOS.append(rand_video_sess)
-                print(
-                    "VIDEO_POOL-length:{}, collection: {}".format(
-                        len(VIDEO_POOL),
-                        [vd["fields"]["video_name"] for vd in WATCHED_VIDEOS],
-                    )
-                )
-                ## 4. get url to pass the CaptionFile obj
-                url = str(settings.STATICFILES_DIRS[0]) + "/captions/base_captions/{}".format(
-                    VIDEO_TITLE.split("/")[1].split(".")[0] + "_0.vtt"
-                )
-                CaptionFile(url, queried_vals)
-                CAPTION_TITLE = "captions/{}.vtt".format(
-                    CaptionName.objects.last().caption_title
-                )
+            ## 4. get url to pass the CaptionFile obj
+            url = str(
+                settings.STATICFILES_DIRS[0]
+            ) + "/captions/base_captions/{}".format(
+                VIDEO_TITLE.split("/")[1].split(".")[0] + "_0.vtt"
+            )
+            CaptionFile(url, q_vals)
+            CAPTION_TITLE = (
+                f"captions/{CaptionName.objects.last().caption_title}.vtt"
+            )
 
-            ## Finally pass the context values to initiate rendering
+            ## 5. pass the context values to initiate rendering
             context = {
                 "submitReady": apps.get_app_config("caisapp").count,
                 "vid_count": 20,
@@ -180,7 +147,9 @@ def client_to_view(request):
                 )
             )
             queried_val = [[0, 0, 0, 0]]
-            apps.get_app_config("caisapp").count = apps.get_app_config("caisapp").count + 1
+            apps.get_app_config("caisapp").count = (
+                apps.get_app_config("caisapp").count + 1
+            )
             global MANUAL_COUNTER
             MANUAL_COUNTER = MANUAL_COUNTER + 1
         else:
@@ -226,6 +195,7 @@ def client_to_view(request):
     else:
         print(request.method)
         return HttpResponse("success")
+
 
 def bye(request):
     print("STUDY FINISHED WITH THIS PARTICIPANT.")
