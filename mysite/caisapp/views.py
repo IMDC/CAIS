@@ -19,10 +19,10 @@ from .models import (
 )
 from .forms import ResponseForm
 
-# ORIGINALH5_ONE = settings.BASE_DIR + "/originalfirst.h5"
-# ORIGINALH5_TWO = settings.BASE_DIR + "/originalsecond.h5"
-# MODIFIEDH5_ONE = settings.BASE_DIR + "/modifiedfirst.h5"
-# MODIFIEDH5_TWO = settings.BASE_DIR + "/modifiedsecond.h5"
+ORIGINALH5_ONE = str(settings.BASE_DIR) + "/originalfirst.h5"
+ORIGINALH5_TWO = str(settings.BASE_DIR) + "/originalsecond.h5"
+MODIFIEDH5_ONE = str(settings.BASE_DIR) + "/modifiedfirst.h5"
+MODIFIEDH5_TWO = str(settings.BASE_DIR) + "/modifiedsecond.h5"
 
 VIDCOUNT = 0
 WAIT_SWITCH = False
@@ -138,9 +138,7 @@ def training(request):
                     )
                 )
                 ## 4. get url to pass the CaptionFile obj
-                url = settings.STATICFILES_DIRS[
-                    0
-                ] + "/captions/base_captions/{}".format(
+                url = str(settings.STATICFILES_DIRS[0]) + "/captions/base_captions/{}".format(
                     VIDEO_TITLE.split("/")[1].split(".")[0] + "_0.vtt"
                 )
                 CaptionFile(url, queried_vals)
@@ -175,18 +173,18 @@ def client_to_view(request):
         q = Question.objects.filter(text="videoresp")[0]
         resp = Response.objects.filter(interview_uuid=UUID).last()
 
-        if apps.get_app_config("home").count in MANUAL_IDX:
+        if apps.get_app_config("caisapp").count in MANUAL_IDX:
             print(
                 "Learn Count={} MANUAL_IDX={}".format(
-                    apps.get_app_config("home").count, MANUAL_IDX
+                    apps.get_app_config("caisapp").count, MANUAL_IDX
                 )
             )
             queried_val = [[0, 0, 0, 0]]
-            apps.get_app_config("home").count = apps.get_app_config("home").count + 1
+            apps.get_app_config("caisapp").count = apps.get_app_config("caisapp").count + 1
             global MANUAL_COUNTER
             MANUAL_COUNTER = MANUAL_COUNTER + 1
         else:
-            learner, queried_val = apps.get_app_config("home").learn_ratings(
+            learner, queried_val = apps.get_app_config("caisapp").learn_ratings(
                 CUR_QINSTANCE, client_list
             )
             print(
@@ -195,7 +193,7 @@ def client_to_view(request):
                 )
             )
             if (
-                apps.get_app_config("home").count == 0
+                apps.get_app_config("caisapp").count == 0
             ):  # If no Blob rows exist, this will run the first time.
                 f1, f2, bname = ORIGINALH5_ONE, ORIGINALH5_TWO, "originalModel"
             else:

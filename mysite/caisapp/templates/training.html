@@ -10,12 +10,14 @@
 </script>
 <script type="text/javascript" src="{% static 'caisapp/index.js' %}?{% now 'U' %}"></script>
 <script type="text/javascript" src="{% static 'caisapp/starRating.js' %}?{% now 'U' %}"></script>
-<link rel="stylesheet" href="{% static 'caisapp/style.css' %}?{% now 'U' %}" type="text/css">
+<link rel="stylesheet" href="{% static 'caisapp/training_style.css' %}?{% now 'U' %}" type="text/css">
+<!-- Star Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <div class="container">
   <div class="notification is-primary has-text-centered"> Do you agree or disagree with CAIS?</div>
 
-  <div class="columns">
+  <div class="columns is-5">
     <div class="column">
       <video class="thumbnail" controls controlsList="nodownload" oncontextmenu="return false;" disablePictureInPicture
         crossorigin="anonymous">
@@ -27,63 +29,56 @@
       <i style="visibility: hidden;" id="m_pred"></i>
       <i style="visibility: hidden;" id="p_pred"></i>
     </div>
-    <div class="tile box">
-      <form action="" id="ratingsForm" class="form-group" method="post" onsubmit="return checkForm()">{% csrf_token %}
+
+    <div class="column">
+      <form action="" id="ratingsForm" class="form-group" method="post" onsubmit="return checkRatingForm()">{% csrf_token %}
         <h3 class="title">CAIS predicted that you would be</h3>
-        <div class="tile is-parent box">
-          <div class="tile is-child box">Synchronization Delay</div>
-          <div class="tile is-child box">
-            <span id="d_rate"></span>
-          </div>
-          <div class="tile box" id="activeButtonDelay">
-            <button class="button" onclick="hideStarInput('delayquality', `starset1`); resetStars(`starset1`);"
-              name="Go" type="button">I Agree</button>
-            <button class="button" onclick="showStarInput('delayquality', `starset1`)" type="button">I Disagree</button>
+
+        <div class="box">
+          <p class="pb-3"><span id="d_rate"></span> with the Synchronization Delay</p>
+          <div class="has-text-centered">
+            <button class="button" type="button" onclick="hideStarInput('delayquality', 'starset1'); resetStars('starset1');">I
+              Agree</button>
+            <button class="button" type="button" onclick="showStarInput('delayquality', 'starset1')">I Disagree</button>
           </div>
           <div id="delayquality" class="" style="visibility: hidden;">
             <div id="inputstar1" class="likert-input"></div>
             <div id="starexplain1" class="starexplain">Click an star to teach Cappy</div>
           </div>
         </div>
-        <div class="tile is-parent">
-          <div class="">Presentation Speed</div>
-          <div class="">
-            <span id="s_rate"></span>
-          </div>
-          <div class="" id="activeButtonSpeed">
-            <button class="button" onclick="hideStarInput('speedquality', `starset2`); resetStars(`starset2`);"
-              name="Go" type="button">I Agree</button>
-            <button class="button" onclick="showStarInput('speedquality', `starset2`)" type="button">I Disagree</button>
+
+        <div class="box">
+          <p class="pb-3"><span id="s_rate"></span> with the Presentation Speed</p>
+          <div class="has-text-centered">
+            <button class="button" type="button" onclick="hideStarInput('speedquality', 'starset2'); resetStars('starse2');">I
+              Agree</button>
+            <button class="button" type="button" onclick="showStarInput('speedquality', 'starset2')">I Disagree</button>
           </div>
           <div id="speedquality" class="" style="visibility: hidden;">
             <div id="inputstar2" class="likert-input"></div>
             <div id="starexplain2" class="starexplain">Click an star to teach Cappy</div>
           </div>
         </div>
-        <div class="tile is-parent">
-          <div class="">Missing words</div>
-          <div class="">
-            <span id="m_rate"></span>
-          </div>
-          <div class="" id="activeButtonMW">
-            <button class="button" onclick="hideStarInput('missingwords', `starset3`); resetStars(`starset3`);"
-              name="Go" type="button">I Agree</button>
-            <button class="button" onclick="showStarInput('missingwords', `starset3`)" type="button">I Disagree</button>
+
+        <div class="box">
+          <p class="pb-3"><span id="m_rate"></span> with the Missing words</p>
+          <div class="has-text-centered">
+            <button class="button" type="button" onclick="hideStarInput('missingwords', 'starset3'); resetStars('starse3');">I
+              Agree</button>
+            <button class="button" type="button" onclick="showStarInput('missingwords', 'starset3')">I Disagree</button>
           </div>
           <div id="missingwords" class="" style="visibility: hidden;">
             <div id="inputstar3" class="likert-input"></div>
             <div id="starexplain3" class="starexplain">Click an star to teach Cappy</div>
           </div>
         </div>
-        <div class="tile is-parent">
-          <div class="">Paraphrasing</div>
-          <div class="">
-            <span id="p_rate"></span>
-          </div>
-          <div class="" id="activeButtonP">
-            <button class="button" onclick="hideStarInput('paraphrasing', `starset4`); resetStars(`starset4`);"
-              name="Go" type="button">I Agree</button>
-            <button class="button" onclick="showStarInput('paraphrasing', `starset4`)" type="button">I Disagree</button>
+
+        <div class="box">
+          <p class="pb-3"><span id="p_rate"></span> with the Paraphrasing</p>
+          <div class="has-text-centered">
+            <button class="button" type="button" onclick="hideStarInput('paraphrasing', 'starset4'); resetStars('starse4');">I
+              Agree</button>
+            <button class="button" type="button" onclick="showStarInput('paraphrasing', 'starset4')">I Disagree</button>
           </div>
           <div id="paraphrasing" class="" style="visibility: hidden;">
             <div id="inputstar4" class="likert-input"></div>
@@ -91,24 +86,20 @@
           </div>
         </div>
 
-        <div class="form-group row">
+        <div>
           <div style="text-align: center; padding-top: 0.6rem;">
             <h3>{{submitReady}} of {{vid_count}} ratings completed</h3>
           </div>
-          <div id="bottompane" class="col" style="padding-top: 0.6rem;">
-            <button id="submitRating" type="submit" class="button is-info" data-target="placeholder">
+          <div id="bottompane">
+            <button id="submitButton" type="submit" class="button is-info is-pulled-right" data-target="placeholder">
               Next
             </button>
           </div>
         </div>
+      </form>
     </div>
-    </form>
-
   </div>
-
-
 </div>
-
 
 
 {% endblock %}

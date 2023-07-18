@@ -1,4 +1,4 @@
-function checkForm(){
+function checkRatingForm(){
     let formValidation = true;
     console.log("validateForm()->starsetBooleans: ");
     for (var i in starsetBooleans){
@@ -10,7 +10,7 @@ function checkForm(){
     };
     if (formValidation){
         submitRatings();        
-        let element = document.getElementById('submitRating');
+        let element = document.getElementById('submitButton');
         return true;
     }else{
         $('.alert').show();
@@ -19,6 +19,11 @@ function checkForm(){
 }
 
 $(document).ready(function(){
+    
+    $("#submitButton").click(function(){
+        $('.loader-wrapper').addClass('is-active');
+    })
+
     //https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
     // SessionStorage propery similar to localStorage, sessionStorage is cleared when the page session ends though.
     if (typeof window.sessionStorage != undefined){

@@ -32,6 +32,7 @@ const star_scale = {
 };
 
 $(document).ready(function () {
+
     // add video-end alert, to display the submit button ONLY when video was watched.
     var v = document.getElementsByTagName("video")[0];
     var b = document.getElementById("bottompane");
@@ -43,12 +44,12 @@ $(document).ready(function () {
     // change the text of submit button when it reached to the end.
     let submitCount = document.getElementById('submit-count').textContent;
     let vidCount = document.getElementById('vid-count').textContent;
-    document.getElementById("submitRating").innerHTML = (submitCount == vidCount)? "Submit": "Next";
+    document.getElementById("submitButton").innerHTML = (submitCount == vidCount)? "Submit": "Next";
 
     // ** Active button coloring script (I Agree / I Disagree) **
-    $("div div div form div div button").click(function(e){
-        $(this).css({"background-color": "#0275d8", "color":"white"})
-        $(this).siblings("button").css({"background-color": "#e2e5de", "color":"black"})
+    $("form div div button").click(function(){
+        $(this).siblings('.is-info').removeClass('is-info');
+        $(this).toggleClass('is-info');
     })
     // ** Active button coloring script END **
     
@@ -62,19 +63,6 @@ $(document).ready(function () {
         defaultRatingsArray[j] = machinePredictions[j];
         document.getElementById(predID[j]).innerHTML = predictionVal;            
         document.getElementById(rateID[j]).innerHTML = star_scale[predictionVal];
-    }
-
-    let values = 0; let kstar = 0;
-    values = machinePredictions;
-    for (var rating in starsets) {
-        $(`.${rating} .fa-star`).each(function (i, item) {
-            if (i < values[kstar]) {
-                $(item).addClass('checked')
-            } else {
-                $(item).removeClass('checked')
-            }
-        });
-        kstar++;
     }
     $('.alert').hide();
 });
@@ -126,7 +114,7 @@ function createStarList(value) {
         star.setAttribute("name", starname[starnameiterator]);        
         star.addEventListener("click", onStarClickListener);
         star.addEventListener("mouseover", onStarHoverListener);
-        star.addEventListener("mouseout", onStarExitListener);        
+        star.addEventListener("mouseout", onStarExitListener);
         starlist.append(star);
     }
     starnameiterator++;
@@ -138,22 +126,21 @@ function onStarExitListener(event) {
     const target = event.target;
     const sibilingStars = Array.from(target.parentNode.children);
     const targetIndex = sibilingStars.indexOf(target);
-
     let prev_clicked_idx = pp[target.parentNode.customKey];
     var new_idx = 0;
-
     if (prev_clicked_idx > 0){
-        new_idx = prev_clicked_idx-1;
-        sibilingStars.forEach((star, index) => {star.style.color = (index == targetIndex)? "rgb(31, 120, 255)": "black";});
-        explainingStarRating(target.parentNode.customKey[0], new_idx+1);
+        sibilingStars.forEach((star, index) => {star.style.color = (index == prev_clicked_idx-1)? "rgb(31, 120, 255)": "black";});
+        explainingStarRating(target.parentNode.customKey[0], prev_clicked_idx);
+        if ($(event.target).hasClass("fa-circle")){
+            $(event.target).toggleClass('fa-circle-o fa-circle');
+        };
     } else {
         sibilingStars.forEach((star, index) => {star.style.color = "black";});
         explainingStarRating(target.parentNode.customKey[0], new_idx);
+        if ($(event.target).hasClass("fa-circle")){
+            $(event.target).toggleClass('fa-circle-o fa-circle');
+        };
     }
-    if ($(event.target).hasClass("fa-circle")){
-        $(event.target).toggleClass('fa-circle-o fa-circle');
-    };
-    
 }   
 
 function onStarHoverListener(event) {

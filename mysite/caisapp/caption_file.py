@@ -35,9 +35,7 @@ class CaptionFile:
         response = Response.objects.all().last()
         response_id = response.interview_uuid
 
-        new_filename = settings.STATICFILES_DIRS[
-            0
-        ] + "/captions/{}_{}_{}_{}.vtt".format(
+        new_filename = str(settings.STATICFILES_DIRS[0]) + "/captions/{}_{}_{}_{}.vtt".format(
             response_id, version_number, genre, self.iter_count
         )
         cap_title = "{}_{}_{}_{}".format(
