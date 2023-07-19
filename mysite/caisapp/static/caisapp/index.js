@@ -11,6 +11,7 @@ function checkRatingForm(){
     if (formValidation){
         submitRatings();        
         let element = document.getElementById('submitButton');
+        $('.loader-wrapper').addClass('is-active');
         return true;
     }else{
         $('.alert').show();
@@ -20,9 +21,9 @@ function checkRatingForm(){
 
 $(document).ready(function(){
     
-    $("#submitButton").click(function(){
-        $('.loader-wrapper').addClass('is-active');
-    })
+    // $("#submitButton").click(function(){
+    //     $('.loader-wrapper').addClass('is-active');
+    // })
 
     //https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
     // SessionStorage propery similar to localStorage, sessionStorage is cleared when the page session ends though.

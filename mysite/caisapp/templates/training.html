@@ -15,14 +15,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <div class="container">
-  <div class="notification is-primary has-text-centered"> Do you agree or disagree with CAIS?</div>
-
+  <!-- <div class="notification is-primary has-text-centered"> Do you agree or disagree with CAIS?</div> -->
+  <div class="alert notification"> yo... </div>
   <div class="columns is-5">
     <div class="column">
       <video class="thumbnail" controls controlsList="nodownload" oncontextmenu="return false;" disablePictureInPicture
         crossorigin="anonymous">
         <source src="{% static videourl|safe %}?{% now 'U' %}" type="video/mp4">
-        <track id='track' kind='captions' src="{% static caption_title|safe %}?{% now 'U' %}" default/>
+        <track id='track' kind='captions' src="{% static caption_title|safe %}?{% now 'U' %}" default />
       </video>
       <i style="visibility: hidden;" id="s_pred"></i>
       <i style="visibility: hidden;" id="d_pred"></i>
@@ -31,58 +31,69 @@
     </div>
 
     <div class="column">
-      <form action="" id="ratingsForm" class="form-group" method="post" onsubmit="return checkRatingForm()">{% csrf_token %}
-        <h3 class="title">CAIS predicted that you would be</h3>
+      <form action="" id="ratingsForm" class="form-group" method="post" onsubmit="return checkRatingForm()">
+        {% csrf_token %}
+        <!-- <h3 class="title">CAIS predicted that you would be</h3> -->
 
         <div class="box">
-          <p class="pb-3"><span id="d_rate"></span> with the Synchronization Delay</p>
-          <div class="has-text-centered">
+          <p class="pb-3">CAIS predicted that you would be '<span id="d_rate"></span>' with the delay</p>
+          <p>What is your rating?</p>
+          <div id="starexplain1" class="starexplain has-text-centered">Click a circle to teach CAIS</div>
+          <!-- <div class="has-text-centered">
             <button class="button" type="button" onclick="hideStarInput('delayquality', 'starset1'); resetStars('starset1');">I
               Agree</button>
             <button class="button" type="button" onclick="showStarInput('delayquality', 'starset1')">I Disagree</button>
-          </div>
-          <div id="delayquality" class="" style="visibility: hidden;">
+          </div> -->
+          <div id="delayquality" class="" style="visibility: visible;">
             <div id="inputstar1" class="likert-input"></div>
-            <div id="starexplain1" class="starexplain">Click an star to teach Cappy</div>
+            <!-- <div id="starexplain1" class="starexplain">Click a circle to teach CAIS</div> -->
           </div>
         </div>
 
         <div class="box">
-          <p class="pb-3"><span id="s_rate"></span> with the Presentation Speed</p>
-          <div class="has-text-centered">
+          <p class="pb-3">CAIS predicted that you would be '<span id="s_rate"></span>' with the speed of the caption for
+            reading</p>
+          <p>What is your rating?</p>
+          <div id="starexplain2" class="starexplain has-text-centered">Click a circle to teach CAIS</div>
+          <!-- <div class="has-text-centered">
             <button class="button" type="button" onclick="hideStarInput('speedquality', 'starset2'); resetStars('starse2');">I
               Agree</button>
             <button class="button" type="button" onclick="showStarInput('speedquality', 'starset2')">I Disagree</button>
-          </div>
-          <div id="speedquality" class="" style="visibility: hidden;">
+          </div> -->
+          <div id="speedquality" class="" style="visibility: visible;">
             <div id="inputstar2" class="likert-input"></div>
-            <div id="starexplain2" class="starexplain">Click an star to teach Cappy</div>
+            <!-- <div id="starexplain2" class="starexplain">Click a circle to teach CAIS</div> -->
           </div>
         </div>
 
         <div class="box">
-          <p class="pb-3"><span id="m_rate"></span> with the Missing words</p>
-          <div class="has-text-centered">
+          <p class="pb-3">CAIS predicted that you would be '<span id="m_rate"></span>' with the words missing in the
+            caption</p>
+          <p>What is your rating?</p>
+          <div id="starexplain3" class="starexplain has-text-centered">Click a circle to teach CAIS</div>
+          <!-- <div class="has-text-centered">
             <button class="button" type="button" onclick="hideStarInput('missingwords', 'starset3'); resetStars('starse3');">I
               Agree</button>
             <button class="button" type="button" onclick="showStarInput('missingwords', 'starset3')">I Disagree</button>
-          </div>
-          <div id="missingwords" class="" style="visibility: hidden;">
+          </div> -->
+          <div id="missingwords" class="" style="visibility: visible;">
             <div id="inputstar3" class="likert-input"></div>
-            <div id="starexplain3" class="starexplain">Click an star to teach Cappy</div>
+            <!-- <div id="starexplain3" class="starexplain">Click a circle to teach CAIS</div> -->
           </div>
         </div>
 
         <div class="box">
-          <p class="pb-3"><span id="p_rate"></span> with the Paraphrasing</p>
-          <div class="has-text-centered">
+          <p class="pb-3">CAIS predicted that you would be '<span id="p_rate"></span>' with the paraphrasing</p>
+          <p>What is your rating?</p>
+          <div id="starexplain4" class="starexplain has-text-centered">Click a circle to teach CAIS</div>
+          <!-- <div class="has-text-centered">
             <button class="button" type="button" onclick="hideStarInput('paraphrasing', 'starset4'); resetStars('starse4');">I
               Agree</button>
             <button class="button" type="button" onclick="showStarInput('paraphrasing', 'starset4')">I Disagree</button>
-          </div>
-          <div id="paraphrasing" class="" style="visibility: hidden;">
+          </div> -->
+          <div id="paraphrasing" class="" style="visibility: visible;">
             <div id="inputstar4" class="likert-input"></div>
-            <div id="starexplain4" class="starexplain">Click an star to teach Cappy</div>
+            <!-- <div id="starexplain4" class="starexplain">Click a circle to teach CAIS</div> -->
           </div>
         </div>
 

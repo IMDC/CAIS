@@ -88,10 +88,9 @@ class ActiveLearningClient:
         self.learner = self.load_AL_models()
 
     def get_data_for_hearing_group(self):
-        deafend, deaf, hoh = (
-            "I am Deafened",
+        deaf, hoh = (
             "I identify as Deaf",
-            "I am Hard of Hearing",
+            "I identify as Hard of Hearing",
         )
 
         q = Question.objects.get(
@@ -100,7 +99,7 @@ class ActiveLearningClient:
         doh = AnswerRadio.objects.filter(question=q).last().body
         self.csv_url = str(settings.STATICFILES_DIRS[0]) + "/um_20000.csv"
 
-        if (doh == deaf) or (doh == deafend):
+        if doh == deaf:
             self.csv_url = str(settings.STATICFILES_DIRS[0]) + f"/deaf_{DATASIZE}.csv"
         elif doh == hoh:
             self.csv_url = str(settings.STATICFILES_DIRS[0]) + f"/hoh_{DATASIZE}.csv"
@@ -167,7 +166,7 @@ class ActiveLearningClient:
         self.learner.teach(q_instance, np_ratings, epochs=100, verbose=0)
 
         print(
-            "Cappy learning the ratings:{} for q_instance:{}\nwhich is {}".format(
+            "CAIS learning the ratings:{} for q_instance:{}\nwhich is {}".format(
                 ratings, q_instance, tmp_queried_val
             )
         )
