@@ -11,6 +11,7 @@ $(document).ready(function(){
         $(this).find("label").css("color", "black");
         $(this).siblings("div").css("background-color", "#e2e5de");
         $(this).siblings("div").find("label").css("color", "white");
+        submitBool = true;
     });
         
     //https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
@@ -23,6 +24,8 @@ $(document).ready(function(){
     }
 
     $('.button').on('click', function(){
-        $('.loader-wrapper').addClass('is-active');        
+        if (submitBool){
+            $('.loader-wrapper').addClass('is-active');
+        }
     });
 });

@@ -7,7 +7,7 @@
       <div class="box">
         <div>Please do not reload this page until finish, it will reset your choices.</div>
 
-        <form action="" method="POST">
+        <form action="" method="POST" onsubmit="return checkDemoForm()">
           {% csrf_token %}
           <div>
             {% for field in form %}
