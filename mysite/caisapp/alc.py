@@ -177,17 +177,11 @@ class ActiveLearningClient:
         pf_val = "Paraphrased" if queried_vals[3] == 1 else "Verbatim"
         hearing_group = "Deaf" if queried_vals[4] == 1 else "Hard of Hearing"
         tmp_str = (
-            "The machine selected index {} with raw values:\n\t"
-            + "Delay of {} ms\n\tSpeed of {} WPM\n\tMissing {} words and is {}.\n"
-            + "Predicting ratings by {}."
+            f"The machine selected index {query_idx} with raw values:\n\t" \
+            + f"Delay of {queried_vals[0]} ms\n\t" \
+            + f"Speed of {queried_vals[1]} WPM\n\t" \
+            + f"Missing {queried_vals[2]} words\n\t" \
+            + f" and is {queried_vals[3]}:{pf_val}.\n"
+            + f"Predicted by {queried_vals[4]}:{hearing_group}."
         )
-        print(
-            tmp_str.format(
-                query_idx,
-                queried_vals[0],
-                queried_vals[1],
-                queried_vals[2],
-                pf_val,
-                hearing_group,
-            )
-        )
+        print(tmp_str)

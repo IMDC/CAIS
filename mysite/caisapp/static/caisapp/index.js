@@ -1,6 +1,5 @@
 function checkRatingForm(){
     let formValidation = true;
-    // console.log("validateForm()->starsetBooleans: ");
     for (var i in starsetBooleans){
         console.log(starsetBooleans[i]);
         if(starsetBooleans[i] === false) {

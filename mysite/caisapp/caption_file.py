@@ -56,7 +56,7 @@ class CaptionFile:
 
         # Now, initiate a caption file object
         # First, pick the base file. (P = paraphrased, V = verbatim)
-        if value[3] == "p":
+        if value[3] == 1:
             self.set_paraphrased(filename)
         else:
             self.vttfile = webvtt.read(filename)

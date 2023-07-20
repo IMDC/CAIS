@@ -117,18 +117,3 @@ for i in range(5):
         f"After-training prediction:{machine_prediction} on {query_idx}:{queried_vals[0]}"
     )
     print()
-
-
-###
-# So what now?
-# It works for
-# 1. Query
-#   1.1. vote on all X unlabelled pool, and find one sample that has the most disagreement on
-#   1.2. then choose this to ask human
-# 2. Predict
-#   2.1. predict on a given sample
-# 3. Teach
-#   3.1. fit the newly added 'answer' given from human
-#   3.2. did the new fitting work?
-#
-# ###
