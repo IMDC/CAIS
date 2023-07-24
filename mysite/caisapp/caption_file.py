@@ -40,6 +40,7 @@ class CaptionFile:
         ) + "/captions/{}_{}_{}_{}.vtt".format(
             response_id, version_number, genre, self.iter_count
         )
+
         cap_title = "{}_{}_{}_{}".format(
             response_id, version_number, genre, self.iter_count
         )
@@ -72,10 +73,6 @@ class CaptionFile:
                     cap_idx
                 )  # collect which caption block idx has the stop...
 
-        # print("block_idx_with_stop", block_idx_with_stop)
-        # for i in block_idx_with_stop:
-        #     print(self.vttfile[i])
-
         if stop_count <= 1:
             # if its only one sentence, apply speed and delay to whole vtt file
             # print("***** SINGLE SENTENCE VTT *****")
@@ -100,7 +97,6 @@ class CaptionFile:
     """############### HELPER FUNCTIONS ###############"""
 
     def save_file(self, newfilename):
-        # newfilename = str(filename.split(".")[0][:-2]) + ".vtt"
         self.vttfile.save(newfilename)
         with open(newfilename, "w") as fd:  # write to opened file
             self.vttfile.write(fd)

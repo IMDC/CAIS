@@ -78,14 +78,12 @@ def training(request):
     else:
         if WAIT_SWITCH:
             print("WAIT SWITCH@index", WAIT_SWITCH)
-            
+
             if apps.get_app_config("caisapp").count == 0:
                 apps.get_app_config("caisapp").set_x_pool()
-            
+
             ## 1. get prediction from cappy backend
-            q_inst, preds, q_vals = apps.get_app_config(
-                "caisapp"
-            ).make_prediction()
+            q_inst, preds, q_vals = apps.get_app_config("caisapp").make_prediction()
             print(q_inst, preds, q_vals.astype(int))
             CUR_PREDS, CUR_QINSTANCE = preds, q_inst
             ## 2. parse the prediction passed from cappy.
@@ -109,9 +107,7 @@ def training(request):
                 VIDEO_TITLE.split("/")[1].split(".")[0] + "_0.vtt"
             )
             CaptionFile(url, q_vals)
-            CAPTION_TITLE = (
-                f"captions/{CaptionName.objects.last().caption_title}.vtt"
-            )
+            CAPTION_TITLE = f"captions/{CaptionName.objects.last().caption_title}.vtt"
 
             ## 5. pass the context values to initiate rendering
             context = {

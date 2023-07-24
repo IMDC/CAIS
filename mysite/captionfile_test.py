@@ -8,6 +8,7 @@ import collections
 from collections import Counter
 from random import randrange
 
+
 def add_time(time, time_in_ms):
     # pre: string formatted time, int delay in ms
     # post: modified (added or subtract delay) time in string
@@ -17,6 +18,7 @@ def add_time(time, time_in_ms):
     new_time = ms_as_time(ms)
     return new_time
 
+
 def ms_as_time(ms):
     hours, ms = divmod(ms, 3600000)
     minutes, ms = divmod(ms, 60000)
@@ -24,21 +26,22 @@ def ms_as_time(ms):
     new_time = "%i:%02i:%06.3f" % (hours, minutes, seconds)
     return new_time
 
+
 def time_as_ms(time):
     time = time.replace(".", ":").split(":")
     hh, mm, ss, ttt = int(time[0]), int(time[1]), int(time[2]), int(time[3])
     ms = int(3600000 * hh + 60000 * mm + 1000 * ss) + ttt
     return ms
 
+
 def get_wpm(caption):
     # word-per minute, total number of words by duration
-    duration = time_as_ms(caption.end) - time_as_ms(
-        caption.start
-    )  # in miliseconds
+    duration = time_as_ms(caption.end) - time_as_ms(caption.start)  # in miliseconds
     duration_in_min = duration / 60000  # 1 min = 60000 ms
     # number of words per time measure.
     wpm = len(caption.text.split()) / duration_in_min
     return wpm
+
 
 def save_file(newfilename):
     # newfilename = str(filename.split(".")[0][:-2]) + ".vtt"
@@ -46,12 +49,14 @@ def save_file(newfilename):
     with open(newfilename, "w") as fd:  # write to opened file
         vttfile.write(fd)
 
+
 def set_delay(delay, caption_start=0):
     for cap_idx in range(len(vttfile)):
         if cap_idx >= caption_start:
             caption = vttfile[cap_idx]
             vttfile[cap_idx].start = add_time(caption.start, delay)
             vttfile[cap_idx].end = add_time(caption.end, delay)
+
 
 def set_speed(new_wpm, caption_start=0):
     # set the speed of caption in word-per-minute manner
@@ -76,9 +81,7 @@ def set_speed(new_wpm, caption_start=0):
             # the new time mark.
             if prev_end:  # should be true after the first call...
                 vttfile[cap_idx].start = prev_end
-            vttfile[cap_idx].end = add_time(
-                caption.end, dt_ms + prev_dt_ms
-            )
+            vttfile[cap_idx].end = add_time(caption.end, dt_ms + prev_dt_ms)
             prev_dt_ms += dt_ms
             prev_end = vttfile[cap_idx].end
 
@@ -88,7 +91,7 @@ def fit_the_line(words):
     newcap = ""
     ## check if the words here fit the 32 character limit for each line
     print(words)
-    for i,v in enumerate(words):
+    for i, v in enumerate(words):
         print(i, v)
         count += len(v) + 1
         if count < 33:
@@ -110,9 +113,7 @@ def set_mswords(rate, caption_start=0):
     idx_list = list(range(caption_start, len(vttfile)))
     selected_idx = random.choice(idx_list)
     while missing_count < rate:
-        tmp_words = vttfile[
-            selected_idx
-        ].text.split()
+        tmp_words = vttfile[selected_idx].text.split()
         # 1. clean out the linebreakers and
         #    get words from the caption-block
         words = [w.replace("\n", "") for w in tmp_words]
@@ -120,8 +121,8 @@ def set_mswords(rate, caption_start=0):
         leftwords = len(words)
         if leftwords > 2:
             pick_a_word = random.choice(words)
-            words.remove(pick_a_word)            
-            vttfile[selected_idx].text = fit_the_line(words) #" ".join(new_captxt)
+            words.remove(pick_a_word)
+            vttfile[selected_idx].text = fit_the_line(words)  # " ".join(new_captxt)
             missing_count += 1
         else:  # when length of words initially < 2
             idx_list.remove(selected_idx)
@@ -131,11 +132,10 @@ def set_mswords(rate, caption_start=0):
                 selected_idx = random.choice(idx_list)  # pick another block,
 
 
-
 def set_paraphrased(filename):
     # first, get the paraphrased file
     pf_fn = filename.replace("_0.vtt", "_100.vtt")
-    vttfile = webvtt.read(pf_fn)    
+    vttfile = webvtt.read(pf_fn)
 
 
 vttfile = None  # initialization
@@ -154,7 +154,7 @@ last_sentence = ""
 # First, pick the base file. (P = paraphrased, V = verbatim)
 if value[3] == 1:
     # set_paraphrased(filename)
-    vttfile = webvtt.read(filename.replace("_1.vtt", "_100.vtt"))    
+    vttfile = webvtt.read(filename.replace("_1.vtt", "_100.vtt"))
 else:
     vttfile = webvtt.read(filename)
 
@@ -186,16 +186,13 @@ else:
         target_sentence_start_idx = block_idx_with_stop[-2] + 1
 
 # print("target_sentence_start_idx:", target_sentence_start_idx)
-set_delay(
-    value[0], 0
-)  # to apply delay from the beginning... as deb requested
+set_delay(value[0], 0)  # to apply delay from the beginning... as deb requested
 set_speed(value[1], target_sentence_start_idx)
 set_mswords(value[2], target_sentence_start_idx)
 
 print("after")
 for i in range(len(vttfile)):
     print(vttfile[i])
-
 
 
 save_file("test.vtt")

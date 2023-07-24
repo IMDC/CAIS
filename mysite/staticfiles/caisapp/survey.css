@@ -1,0 +1,35 @@
+.form-demog div div {
+    cursor: pointer;
+    background-color: #00d1b2;
+    /* border-color: transparent; */
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    list-style:none;
+    padding: 1rem;
+}
+
+.form-demog div div:hover {
+    background-color: #ffe08a;
+    border-color: #ffe08a;
+    color: black;
+    cursor: pointer;
+}
+
+.form-demog div div:hover label {
+    color: black;
+    cursor: pointer;
+}
+
+.form-demog div div label {
+    margin: auto;
+}
+
+input[type="radio"] {
+    list-style:none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+}

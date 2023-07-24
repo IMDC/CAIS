@@ -88,6 +88,7 @@ class AnswerBase(models.Model):
 # field sizes depending on the actual question this answer corresponds to.
 # any "required" attribute will be enforced by the form.
 
+
 class AnswerText(AnswerBase):
     body = models.TextField(blank=True, null=True)
 

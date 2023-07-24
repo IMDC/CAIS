@@ -22,7 +22,7 @@
       <video class="thumbnail" controls controlsList="nodownload" oncontextmenu="return false;" disablePictureInPicture
         crossorigin="anonymous">
         <source src="{% static videourl|safe %}?{% now 'U' %}" type="video/mp4">
-        <track id='track' kind='captions' src="{% static caption_title|safe %}?{% now 'U' %}" default />
+        <track id='track' kind='captions' src="{% static caption_title|safe %}?{% now 'U' %}" default />        
       </video>
       <i style="visibility: hidden;" id="s_pred"></i>
       <i style="visibility: hidden;" id="d_pred"></i>
